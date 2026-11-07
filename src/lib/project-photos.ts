@@ -1,14 +1,42 @@
 import type { ImageMetadata } from 'astro';
+import { validateArtworks } from './artwork-data.mjs';
+import { withBase } from './urls';
 import embroideries from '../data/embroideries.json';
 import scrapingby from '../data/scrapingby.json';
 import artworks from '../data/artworks.json';
 
 export type ProjectCollection = 'embroideries' | 'scrapingby' | 'artworks';
-const manifests = { embroideries, scrapingby, artworks };
+export interface ArtworkEntry {
+  id: string;
+  postId: string | null;
+  imageIndex: number;
+  file: string;
+  publish: boolean;
+  caption: string;
+  date: string;
+  postUrl: string;
+}
+export const manifests: Record<ProjectCollection, ArtworkEntry[]> = { embroideries, scrapingby, artworks };
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '../assets/{embroideries,scrapingby,artworks}/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
   { eager: true }
 );
+
+export const collectionInfo = {
+  artworks: { title: 'Artworks', href: '/' },
+  scrapingby: { title: 'ScrapingBy', href: '/scrapingby/' },
+  embroideries: { title: 'Embroideries', href: '/embroideries/' },
+};
+export const artworkPath = (id: string) => withBase(`/artwork/${id}/`);
+validateArtworks(manifests, (collection: string, file: string) =>
+  Boolean(images[`../assets/${collection}/${file}`]));
+
+export function publishedArtworks() {
+  return (Object.keys(manifests) as ProjectCollection[]).flatMap(collection =>
+    manifests[collection].filter(entry => entry.publish).map(entry => ({
+      ...entry, collection, image: images[`../assets/${collection}/${entry.file}`].default,
+    })));
+}
 
 // Blog images reuse project files and respect the same publication control.
 export function projectPhoto(collection: ProjectCollection, filename: string) {
@@ -17,5 +45,5 @@ export function projectPhoto(collection: ProjectCollection, filename: string) {
   if (entry.publish === false) return undefined;
   const image = images[`../assets/${collection}/${filename}`]?.default;
   if (!image) throw new Error(`Missing ${collection} image: ${filename}`);
-  return { image, caption: entry.caption };
+  return { image, caption: entry.caption, id: entry.id, href: artworkPath(entry.id) };
 }

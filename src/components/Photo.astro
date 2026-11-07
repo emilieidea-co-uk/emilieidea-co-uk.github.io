@@ -44,6 +44,7 @@ const photo = image ? await renderPhoto(image) : undefined;
     type="button"
     aria-label={`${altText} — view larger`}
     data-full={photo.full}
+    data-artwork-url={project?.href}
     data-alt={altText}
     data-caption={captionText}
   >

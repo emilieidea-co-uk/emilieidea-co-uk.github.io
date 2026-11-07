@@ -4,6 +4,9 @@ import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import { site, nav, social } from '../config';
 
+interface Props { category?: import('../lib/project-photos').ProjectCollection; }
+const { category } = Astro.props;
+
 // Normalise the current path (strip trailing slash) for active-link matching.
 // A link is active on its own page and on any page beneath it (e.g. "Blog"
 // stays active while reading a post), but "/" only matches the home page.
@@ -18,7 +21,7 @@ const isActive = (href: string) => {
 <header class="sidebar">
   <div class="sidebar__inner">
     <a class="brand" href={withBase('/')} aria-label={`${site.name} — home`}>
-      <Logo class="brand__mark" />
+      <Logo class="brand__mark" category={category} />
       <span class="brand__names">
         <span class="brand__name">{site.name}</span>
         {site.nameZh && (

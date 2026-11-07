@@ -1,0 +1,32 @@
+---
+import { getImage } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import Photo from '../../components/Photo.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { publishedArtworks, collectionInfo } from '../../lib/project-photos';
+import { artworkTitle } from '../../lib/artwork-data.mjs';
+import { withBase } from '../../lib/urls';
+
+export function getStaticPaths() {
+  return publishedArtworks().map(artwork => ({ params: { id: artwork.id }, props: { artwork } }));
+}
+const { artwork } = Astro.props;
+const category = collectionInfo[artwork.collection];
+const title = artworkTitle(artwork, category.title);
+const description = artwork.caption.trim().replace(/\s+/g, ' ').slice(0, 200) || `${category.title} by EmilieIdea — ${artwork.id}.`;
+const preview = await getImage({ src: artwork.image, width: Math.min(1200, artwork.image.width), format: 'jpg', quality: 85 });
+const date = new Date(artwork.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<Layout title={title} description={description} category={artwork.collection}
+  socialImage={{ src: preview.src, width: Number(preview.attributes.width), height: Number(preview.attributes.height), alt: title }}>
+  <article class="page prose artwork-detail">
+    <p><a href={withBase(category.href)}>← {category.title}</a></p>
+    <p><time datetime={artwork.date}>{date}</time></p>
+    <Photo collection={artwork.collection} src={artwork.file} alt={title} />
+    {artwork.postUrl && <p><a href={artwork.postUrl} target="_blank" rel="noopener noreferrer">View original Instagram post →</a></p>}
+  </article>
+  <Lightbox />
+</Layout>
+<style>
+  .artwork-detail :global(.post-figure__caption) { white-space: pre-wrap; overflow-wrap: anywhere; text-align: left; }
+</style>

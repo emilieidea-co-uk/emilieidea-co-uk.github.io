@@ -24,12 +24,14 @@ import { site } from '../config';
 interface Props {
   title?: string;
   description?: string;
+  socialImage?: { src: string; width: number; height: number; alt: string };
+  category?: import('../lib/project-photos').ProjectCollection;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, socialImage, category } = Astro.props;
 const pageTitle = title ? `${title} — ${site.name}` : site.title;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
-const ogImage = absoluteUrl('/og.jpg', Astro.site);
+const ogImage = absoluteUrl(socialImage?.src ?? '/og.jpg', Astro.site);
 // Footer copyright year (fixed at build time — a rebuild refreshes it).
 const year = new Date().getFullYear();
 ---
@@ -87,8 +89,10 @@ const year = new Date().getFullYear();
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content={socialImage?.width ?? 1200} />
+    <meta property="og:image:height" content={socialImage?.height ?? 630} />
+    {socialImage && <meta property="og:image:alt" content={socialImage.alt} />}
+    {socialImage && <meta name="twitter:image:alt" content={socialImage.alt} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
@@ -96,7 +100,7 @@ const year = new Date().getFullYear();
     <BaseSchema />
   </head>
   <body>
-    <Sidebar />
+    <Sidebar category={category} />
     <main class="main">
       <slot />
       <footer class="site-footer">

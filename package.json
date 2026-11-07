@@ -12,7 +12,10 @@
     "setup": "npm run gen:brand && npm run gen:icons && npm run gen:placeholders",
     "gen:brand": "node scripts/generate-brand.mjs",
     "gen:icons": "node scripts/generate-icons.mjs",
-    "gen:placeholders": "node scripts/generate-placeholders.mjs"
+    "gen:placeholders": "node scripts/generate-placeholders.mjs",
+    "assign:ids": "node scripts/assign-artwork-ids.mjs",
+    "test:artworks": "node --test tests/artwork-data.test.mjs tests/lightbox.test.mjs && python3 tests/import-artwork-ids.test.py",
+    "test:artwork-build": "python3 tests/verify-artwork-build.py"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.2",

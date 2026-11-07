@@ -1,44 +1,16 @@
 ---
 import { absoluteUrl } from '../lib/urls';
-import type { ImageMetadata } from 'astro';
 import { renderPhoto, GRID_SIZES } from '../lib/photos';
 import Lightbox from './Lightbox.astro';
 import { site as siteInfo } from '../config';
-import embroideryData from '../data/embroideries.json';
-import scrapingbyData from '../data/scrapingby.json';
-import artworksData from '../data/artworks.json';
+import { publishedArtworks, artworkPath } from '../lib/project-photos';
 
 interface Props {
   collection: 'embroideries' | 'scrapingby' | 'artworks';
   title?: string;
 }
 const { collection, title = collection.charAt(0).toUpperCase() + collection.slice(1) } = Astro.props;
-
-// Globs must be static string literals (Vite requirement).
-// Each manifest chooses the published images from its project folder.
-const embroideries = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/embroideries/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
-  { eager: true }
-);
-const scrapingby = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/scrapingby/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
-  { eager: true }
-);
-const artworks = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/artworks/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
-  { eager: true }
-);
-const files = { embroideries, scrapingby, artworks }[collection];
-const galleryData = { embroideries: embroideryData, scrapingby: scrapingbyData, artworks: artworksData }[collection];
-
-// Preserve the reviewed order and publication settings in each manifest.
-const galleryMeta = new Map(galleryData.map((entry) => [entry.file, entry]));
-const entries = galleryData.filter((entry) => entry.publish !== false).map((entry): [string, { default: ImageMetadata }] => {
-  const path = `../assets/${collection}/${entry.file}`;
-  const image = files[path];
-  if (!image) throw new Error(`Missing ${collection} image: ${entry.file}`);
-  return [path, image];
-});
+const entries = publishedArtworks().filter(entry => entry.collection === collection);
 
 // Fallback alt text from the filename ("01-snowy-harbor.jpg" -> "Snowy harbor")
 // for photos without a description yet, so alt / SEO text is never empty.
@@ -50,16 +22,15 @@ function captionFor(path: string, index: number): string {
 }
 
 const photos = await Promise.all(
-  entries.map(async ([path, mod], i) => {
-    const photo = await renderPhoto(mod.default);
-    const imported = galleryMeta.get(path.split('/').pop()!);
-    const caption = imported?.caption ?? '';
-    const alt = caption.trim() ? caption.replace(/\s+/g, ' ').slice(0, 160) : captionFor(path, i);
-    return { ...photo, caption, alt, date: imported?.date };
+  entries.map(async (entry, i) => {
+    const photo = await renderPhoto(entry.image);
+    const caption = entry.caption;
+    const alt = caption.trim() ? caption.replace(/\s+/g, ' ').slice(0, 160) : captionFor(entry.file, i);
+    return { ...photo, caption, alt, date: entry.date, href: artworkPath(entry.id) };
   })
 );
 
-// Structured data: an ImageGallery of ImageObjects attributed to the photographer.
+// Structured data: an ImageGallery of ImageObjects attributed to the artist.
 // Include captions and dates from the gallery manifest when available.
 const url = (path: string) => absoluteUrl(path, Astro.site);
 const base = url('/').replace(/\/$/, '');
@@ -73,6 +44,7 @@ const jsonLd = {
   image: photos.map((p) => ({
     '@type': 'ImageObject',
     contentUrl: url(p.full),
+    url: url(p.href),
     name: p.alt,
     ...(p.caption ? { caption: p.caption } : {}),
     ...(p.date ? { dateCreated: p.date } : {}),
@@ -100,6 +72,7 @@ const jsonLd = {
             type="button"
             aria-label={`${photo.alt} — view larger`}
             data-full={photo.full}
+            data-artwork-url={photo.href}
             data-alt={photo.alt}
             data-caption={photo.caption}
           >

@@ -436,7 +436,10 @@ a {
   flex-direction: column;
   align-items: center;
   max-width: 100%;
-  max-height: 100%;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .lightbox__img {
@@ -444,12 +447,10 @@ a {
   max-height: 85vh;
   width: auto;
   height: auto;
-  /* Let the image shrink below its 85vh cap when the figure would otherwise
-     overflow (short landscape viewports, e.g. iPad), so the caption beneath it
-     stays on screen instead of being pushed off the bottom. A flex item won't
-     shrink past its intrinsic size without min-height:0; aspect ratio is kept
-     since it's a replaced element. On tall screens nothing shrinks. */
+  /* Preserve image and caption height inside the scrollable figure instead
+     of allowing flex layout to collapse the caption. */
   min-height: 0;
+  flex-shrink: 0;
   object-fit: contain;
   box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
 }
@@ -461,6 +462,9 @@ a {
 }
 
 .lightbox__caption {
+  flex-shrink: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   margin-top: 0.9rem;
   max-width: 60ch;
   color: #ececec;
@@ -1438,4 +1442,37 @@ a {
 :root[data-theme='dark'] .prose .token.regex,
 :root[data-theme='dark'] .prose .token.important {
   color: #fd971f;
+}
+
+/* Leave room to read the caption; longer content scrolls with its image. */
+.lightbox.has-caption .lightbox__img { max-height: 60vh; }
+
+/* Artwork links stay reachable without changing the existing photo viewer. */
+.lightbox__sharing {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: min(90vw, 540px);
+  color: white;
+}
+.lightbox__sharing[hidden], .lightbox__url[hidden] { display: none; }
+.lightbox__copy, .lightbox__url {
+  font: inherit;
+  background: #202020;
+  color: white;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+.lightbox__copy { cursor: pointer; }
+.lightbox__url { width: 100%; min-width: 0; }
+.lightbox.has-share-link .lightbox__figure {
+  max-height: calc(100vh - 180px);
+  margin-bottom: 90px;
 }

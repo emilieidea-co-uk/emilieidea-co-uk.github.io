@@ -25,6 +25,7 @@ if args.limit is not None and args.limit < 1:
 csv_path = args.csv or ROOT / SOURCES[args.collection]
 manifest = ROOT / 'src/data' / f'{args.collection}.json'
 existing = json.loads(manifest.read_text(encoding='utf-8')) if manifest.exists() else []
+existing_by_file = {item['file']: item for item in existing}
 publish_by_file = {item['file']: item.get('publish', True) for item in existing}
 with csv_path.open(newline='', encoding='utf-8-sig') as handle:
     rows = sorted(csv.DictReader(handle), key=lambda row: int(row['timestamp']), reverse=True)
@@ -77,13 +78,36 @@ selected = []
 for item in chosen:
     filename = item['file']
     row, sequence = image_posts[filename]
+    previous = existing_by_file.get(filename, {})
+    post_id = previous.get('postId', row['shortcode'])
+    image_index = previous.get('imageIndex', sequence or 1)
     selected.append({
+        'id': previous.get('id', item.get('id', f'instagram-{post_id}-{image_index:02d}')),
+        'postId': post_id,
+        'imageIndex': image_index,
         'file': filename,
         'publish': publish_by_file.get(filename, item.get('publish', True)),
         'caption': row['caption'],
         'date': datetime.fromtimestamp(int(row['timestamp']), timezone.utc).isoformat().replace('+00:00', 'Z'),
         'postUrl': row['url'],
     })
+
+# Reject identity collisions across collections before copying or writing anything.
+all_ids = set()
+for collection_name in SOURCES:
+    records = selected if collection_name == args.collection else json.loads(
+        (ROOT / 'src/data' / f'{collection_name}.json').read_text(encoding='utf-8'))
+    positions = set()
+    for record in records:
+        identity = record.get('id')
+        image_index = record.get('imageIndex')
+        position = (record['postId'], image_index) if record.get('postId') else identity
+        if not isinstance(identity, str) or not re.fullmatch(r'[\w-]+', identity, re.ASCII) or identity in all_ids:
+            raise SystemExit(f'Invalid or duplicate artwork ID: {identity}. No files copied.')
+        if position in positions or type(image_index) is not int or image_index < 1:
+            raise SystemExit(f'Invalid or duplicate carousel position: {position}. No files copied.')
+        all_ids.add(identity)
+        positions.add(position)
 
 destination = ROOT / 'src/assets' / args.collection
 for item in selected:

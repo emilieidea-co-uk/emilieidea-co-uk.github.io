@@ -41,7 +41,7 @@ const items = (await Promise.all(
     const caption = o.caption ?? project?.caption ?? '';
     const alt = o.alt ?? (caption.trim() || captionFromFilename(o.src, i));
     const photo = await renderPhoto(project?.image ?? findMeta(o.src));
-    return { ...photo, alt, caption };
+    return { ...photo, alt, caption, href: project?.href };
   })
 )).filter((item) => item !== undefined);
 ---
@@ -54,6 +54,7 @@ const items = (await Promise.all(
         type="button"
         aria-label={`${item.alt} — view larger`}
         data-full={item.full}
+        data-artwork-url={item.href}
         data-alt={item.alt}
         data-caption={item.caption}
       >

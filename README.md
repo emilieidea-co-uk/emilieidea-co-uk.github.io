@@ -39,68 +39,30 @@ check that build on your phone too. Production CSS targets Safari 15 so older
 iPhones retain the mobile menu and single-column gallery. Keep `cssTarget` in
 [astro.config.mjs](astro.config.mjs) when changing build settings.
 
-## Manage project images
+## How to upload images and related descriptions
 
-Each collection uses `src/assets/<collection>/` for images and
-`src/data/<collection>.json` for its reviewed selection. Original archives are
-also under `src/assets/`, but are excluded from Git and development polling.
+See [HowToUpload.md](HowToUpload.md#add-images-and-descriptions) for the steps to
+copy images into a project, add captions, and control which images are published.
 
-| Gallery | Page | Collection | Original archive |
-| --- | --- | --- | --- |
-| Artworks | `/` | `artworks` | `ei_original_3_ar/` |
-| ScrapingBy | `/scrapingby/` | `scrapingby` | `ei_original_2_sc/` |
-| Embroideries | `/embroideries/` | `embroideries` | `ei_original_1_em/` |
+| Gallery | Image folder | Description file |
+| --- | --- | --- |
+| Artworks (home page) | `src/assets/artworks/` | `src/data/artworks.json` |
+| ScrapingBy | `src/assets/scrapingby/` | `src/data/scrapingby.json` |
+| Embroideries | `src/assets/embroideries/` | `src/data/embroideries.json` |
 
-Manifest entries contain `file`, `publish`, `caption`, `date` (UTC), and `postUrl`.
-
-- Set `publish: false` to hide an image from the gallery and any blog references.
-- Only listed images appear; copying a file into the folder alone does not publish it.
-- The JSON array controls display order. Captions show three lines in galleries,
-  with the full text available in the lightbox.
-- To add an image manually, copy it into its collection folder and add its metadata
-  to the matching JSON file.
-
-The importer requires the original archive and its CSV export, which are not
-included in a fresh clone. To refresh a reviewed selection, for example:
-
-```bash
-python3 scripts/import-embroideries.py --collection artworks \
-  --selection src/data/artworks.json --limit 50
-```
-
-Use `scrapingby` or `embroideries` with their matching manifests for the other
-collections. `--limit` checks the selected count; it does not choose extra images.
-`--csv path/to/export.csv` overrides the source export. Imports copy originals,
-refresh captions and dates, preserve existing `publish` values by filename, and
-sort by post date newest first, then carousel sequence. Without `--selection`,
-the importer reuses the existing manifest rather than selecting unrelated posts.
-
-Builds generate responsive WebP images and remove unreferenced source images
-from `dist/`. Images committed to this public repository remain accessible in Git.
+Each image needs an entry in its description file. Set `publish: false` to hide
+it. Run `npm run assign:ids` after adding entries to save their permanent IDs.
+Each published image has an individual `/artwork/<id>/` page; **Copy Link** in
+the lightbox shares that image. The guide also explains the optional CSV importer.
 
 ## Edit the blog and pages
 
-Posts live in [src/content/blog/](src/content/blog/). Add a `.md` or `.mdx` file;
-its filename becomes `/blog/<filename>/`. Posts are listed newest first.
+Posts live in [src/content/blog/](src/content/blog/). About, Contact, Privacy, and
+Artwork & Image Use live in `src/pages/`. Site name, navigation, and social URLs
+are in [src/config.ts](src/config.ts).
 
-```yaml
----
-title: 'A new piece'
-description: 'Notes on the materials and process.'
-pubDate: 2026-11-07
-draft: false
----
-```
-
-Use `draft: true` to exclude a post from production; drafts remain visible in dev.
-For images, use MDX: `Photo` provides a full-width image and `Gallery` provides
-two columns, collapsing to one on phones. Their optional `collection` property
-reuses published project images and captions. See the
-[current post](src/content/blog/a-line-through-thread-clay-and-print.mdx) for examples.
-
-Edit [src/config.ts](src/config.ts) for the name, navigation, and social URLs.
-About, Contact, Privacy, and Licensing are editable files in `src/pages/`.
-Layout and responsive styles are in [src/styles/global.css](src/styles/global.css).
+See [the blog guide](HowToUpload.md#edit-the-blog) for a post template and image
+examples, and [the page guide](HowToUpload.md#edit-pages) for the files to edit.
 
 ## Refresh logos and sharing artwork
 

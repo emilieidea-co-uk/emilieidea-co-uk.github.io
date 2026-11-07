@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/urls';
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import { site, nav, social } from '../config';
@@ -10,13 +11,13 @@ const norm = (p: string) => p.replace(/\/+$/, '') || '/';
 const current = norm(Astro.url.pathname);
 const isActive = (href: string) => {
   const h = norm(href);
-  return h === current || (h !== '/' && current.startsWith(h + '/'));
+  return h === current || (h !== norm(withBase('/')) && current.startsWith(h + '/'));
 };
 ---
 
 <header class="sidebar">
   <div class="sidebar__inner">
-    <a class="brand" href="/" aria-label={`${site.name} — home`}>
+    <a class="brand" href={withBase('/')} aria-label={`${site.name} — home`}>
       <Logo class="brand__mark" />
       <span class="brand__names">
         <span class="brand__name">{site.name}</span>

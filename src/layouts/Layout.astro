@@ -1,4 +1,5 @@
 ---
+import { withBase, absoluteUrl } from '../lib/urls';
 // Self-hosted fonts (bundled at build — no external requests, no layout shift).
 // Latin subset only, to keep the deploy lean.
 import '@fontsource/cormorant-garamond/latin-400.css';
@@ -28,7 +29,7 @@ interface Props {
 const { title, description = site.description } = Astro.props;
 const pageTitle = title ? `${title} — ${site.name}` : site.title;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
-const ogImage = Astro.site ? new URL('/og.jpg', Astro.site).href : '/og.jpg';
+const ogImage = absoluteUrl('/og.jpg', Astro.site);
 // Footer copyright year (fixed at build time — a rebuild refreshes it).
 const year = new Date().getFullYear();
 ---
@@ -70,9 +71,9 @@ const year = new Date().getFullYear();
         display: none;
       }
     </style>
-    <link rel="icon" href="/favicon.png" type="image/png" sizes="256x256" />
-    <link rel="icon" href="/favicon-dark.png" type="image/png" sizes="256x256" media="(prefers-color-scheme: dark)" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href={withBase('/favicon.png')} type="image/png" sizes="256x256" />
+    <link rel="icon" href={withBase('/favicon-dark.png')} type="image/png" sizes="256x256" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta name="author" content={site.name} />
@@ -101,8 +102,8 @@ const year = new Date().getFullYear();
       <footer class="site-footer">
         <p class="site-footer__line">
           <span>© {year} {site.name}</span>
-          <a class="site-footer__link" href="/privacy">Privacy</a>
-          <a class="site-footer__link" href="/license">Licensing</a>
+          <a class="site-footer__link" href={withBase('/privacy/')}>Privacy</a>
+          <a class="site-footer__link" href={withBase('/license/')}>Licensing</a>
         </p>
       </footer>
     </main>

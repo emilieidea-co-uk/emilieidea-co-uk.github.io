@@ -1,3 +1,5 @@
+import { withBase } from './lib/urls';
+
 // ────────────────────────────────────────────────────────────────────────────
 //  Site configuration — edit these values to make the template your own.
 //  Almost everything visitor-facing (titles, the brand, SEO, JSON-LD, llms.txt)
@@ -22,14 +24,14 @@ export const site = {
 
 // Left-hand navigation. "Digital" is the home page and shows by default.
 export const nav: NavItem[] = [
-  { label: 'Digital', href: '/' },
-  { label: 'Analog', href: '/analog' },
-  { label: 'Calendar', href: '/calendar' },
-  { label: 'Tech Blog', href: '/blog/tech' },
-  { label: 'Photo Blog', href: '/blog/photography' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-  { label: 'License', href: '/license' },
+  { label: 'Digital', href: withBase('/') },
+  { label: 'Analog', href: withBase('/analog/') },
+  { label: 'Calendar', href: withBase('/calendar/') },
+  { label: 'Tech Blog', href: withBase('/blog/tech/') },
+  { label: 'Photo Blog', href: withBase('/blog/photography/') },
+  { label: 'About', href: withBase('/about/') },
+  { label: 'Contact', href: withBase('/contact/') },
+  { label: 'License', href: withBase('/license/') },
 ];
 
 // Social / external links shown in the sidebar and on the contact page. Replace

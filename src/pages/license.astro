@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/urls';
 import Layout from "../layouts/Layout.astro";
 import { site, social } from "../config";
 ---
@@ -41,7 +42,7 @@ import { site, social } from "../config";
                 href={social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer">LinkedIn</a
-            >, or through the <a href="/contact">contact page</a>.
+            >, or through the <a href={withBase('/contact/')}>contact page</a>.
         </p>
     </article>
 </Layout>

@@ -1,3 +1,4 @@
+import { absoluteUrl } from '../lib/urls';
 import type { APIRoute } from 'astro';
 
 // Crawler stance: the site IS discoverable by search engines and AI *search /
@@ -40,7 +41,7 @@ const BLOCK = [
 ];
 
 export const GET: APIRoute = ({ site }) => {
-  const sitemap = site ? new URL('sitemap-index.xml', site).href : '/sitemap-index.xml';
+  const sitemap = absoluteUrl('/sitemap-index.xml', site);
 
   const lines = [
     '# Search engines and AI search/citation crawlers are welcome.',

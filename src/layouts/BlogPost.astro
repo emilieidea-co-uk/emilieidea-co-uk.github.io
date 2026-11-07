@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/urls';
 import Layout from './Layout.astro';
 import ShareButton from '../components/ShareButton.astro';
 import Lightbox from '../components/Lightbox.astro';
@@ -35,7 +36,7 @@ const iso = (d: Date) => new Date(d).toISOString().slice(0, 10);
 
 <Layout title={title} description={description}>
   <article class="post page">
-    <p class="post__eyebrow"><a href={section.href}>{section.label}</a></p>
+    <p class="post__eyebrow"><a href={withBase(`${section.href}/`)}>{section.label}</a></p>
     <h1 class="post__title">{title}</h1>
 
     <div class="post__meta">

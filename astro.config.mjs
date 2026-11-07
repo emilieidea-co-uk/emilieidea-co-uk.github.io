@@ -23,10 +23,11 @@ export default defineConfig({
   // run inline before the bundle loads. Astro's security.csp is intentionally
   // left off: it would emit script hashes, and the browser ignores 'unsafe-inline'
   // whenever a hash is present.
-  // Your production domain — used for canonical URLs, Open Graph tags, the
-  // sitemap, robots.txt, llms.txt, and the JSON-LD. CHANGE THIS to your own
-  // domain; everything URL-bound is derived from it.
-  site: 'https://example.com',
+  // GitHub Pages origin and project path. Shared URL helpers use BASE_URL for
+  // navigation, public assets, and SEO links in development and production.
+  site: 'https://emilieidea-co-uk.github.io',
+  base: '/zugou',
+  trailingSlash: 'always',
 
   // Preserve Astro's pre-v7 HTML whitespace handling. Astro 7 changed the
   // default `compressHTML` from `true` to `'jsx'`, which strips whitespace with

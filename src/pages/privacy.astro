@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/urls';
 import Layout from "../layouts/Layout.astro";
 import { site } from "../config";
 
@@ -36,7 +37,7 @@ const lastUpdated = "1 January 2026";
             law I am the “data controller” (EU/UK GDPR), the individual
             accountable for personal information (Canada’s PIPEDA), and the
             person in charge of personal information (Québec’s Law 25). You can
-            reach me through the <a class="text-link" href="/contact"
+            reach me through the <a class="text-link" href={withBase('/contact/')}
                 >contact page</a
             >.
         </p>
@@ -191,7 +192,7 @@ const lastUpdated = "1 January 2026";
         <p>
             To exercise any of these rights, get in touch through the <a
                 class="text-link"
-                href="/contact">contact page</a
+                href={withBase('/contact/')}>contact page</a
             >. I will respond within the time required by the law that applies to
             you.
         </p>
@@ -223,7 +224,7 @@ const lastUpdated = "1 January 2026";
         <h2>Contact</h2>
         <p>
             Questions about privacy, or a request about your data? Please reach
-            me through the <a class="text-link" href="/contact">contact page</a
+            me through the <a class="text-link" href={withBase('/contact/')}>contact page</a
             >.
         </p>
     </article>

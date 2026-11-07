@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/urls';
 import Layout from "../layouts/Layout.astro";
 import { site, social } from "../config";
 
@@ -39,9 +40,9 @@ const facts = [
         </p>
 
         <p>
-            I write here, too: a <a href="/blog/tech">Tech Blog</a> for notes on
+            I write here, too: a <a href={withBase('/blog/tech/')}>Tech Blog</a> for notes on
             tools and building for the web, and a
-            <a href="/blog/photography">Photo Blog</a> of field notes on light,
+            <a href={withBase('/blog/photography/')}>Photo Blog</a> of field notes on light,
             places, and the craft of photography.
         </p>
 

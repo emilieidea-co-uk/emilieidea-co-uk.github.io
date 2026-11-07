@@ -1140,6 +1140,17 @@ a {
    (instead of a fixed, narrow measure pinned in a sea of whitespace). Only at
    >=1024px, where the fixed sidebar + wide main exist. */
 @media (min-width: 1024px) {
+  /* Keep the full sidebar reachable on short windows and when zoomed in. */
+  .sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .sidebar__inner {
+    height: auto;
+    min-height: 100%;
+  }
+
   .page,
   .blog-head,
   .post-list,

@@ -32,6 +32,11 @@ export default defineConfig({
   // Poll for edits so dev previews also update when filesystem notifications
   // are missed (for example, edits made through the shared workspace).
   vite: {
+    build: {
+      // Keep min/max-width media queries for iOS 15 (including iPhone 7 Plus).
+      // Modern range syntax emitted by the default minifier needs Safari 16.4.
+      cssTarget: 'safari15',
+    },
     server: {
       watch: {
         usePolling: true,

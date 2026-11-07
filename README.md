@@ -55,6 +55,19 @@ it. Run `npm run assign:ids` after adding entries to save their permanent IDs.
 Each published image has an individual `/artwork/<id>/` page; **Copy Link** in
 the lightbox shares that image. The guide also explains the optional CSV importer.
 
+## Import from Instagram
+
+Use the [local Chrome extension and ZIP importer](import_tool/README.md) to choose
+posts from a profile, review photos and captions, and add new images as unpublished.
+
+```bash
+npm run import:instagram -- ~/Downloads/instagram-export.zip --dry-run
+npm run import:instagram -- ~/Downloads/instagram-export.zip
+```
+
+The importer preserves existing IDs and edits and skips duplicates. Real Instagram
+extraction still needs the live acceptance check described in the tool guide.
+
 ## Edit the blog and pages
 
 Posts live in [src/content/blog/](src/content/blog/). About, Contact, Privacy, and

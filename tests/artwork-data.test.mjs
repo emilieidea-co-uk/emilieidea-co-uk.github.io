@@ -19,6 +19,7 @@ test('separate carousel IDs, stable across renames and caption edits', () => {
   const local = assignIdentity({ ...example, postUrl: '' });
   assert.equal(assignIdentity(local).id, local.id);
   validateArtworks({ artworks: [local] }, () => true);
+  assert.throws(() => validateArtworks({ artworks: [local] }, () => false), /missing image/);
 });
 test('validation rejects duplicates, invalid indices and missing files, including unpublished images', () => {
   const entry = assignIdentity(example);

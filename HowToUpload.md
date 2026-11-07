@@ -3,6 +3,24 @@
 Use this guide to add project images and descriptions, write blog posts, and edit
 pages. All paths below are relative to the repository root.
 
+## Import selected Instagram posts
+
+For Instagram photos and captions, follow the [import tool guide](import_tool/README.md).
+Load its extension in Chrome, start from a profile or post, review each selected
+photo, and download a ZIP. Then preview and import it from the repository root:
+
+```bash
+npm run import:instagram -- ~/Downloads/instagram-export.zip --dry-run
+npm run import:instagram -- ~/Downloads/instagram-export.zip
+```
+
+New entries have permanent IDs and `publish: false`. Set reviewed entries to
+`publish: true` to see them locally and include them in the next deployment.
+Existing records and manually edited captions are preserved. See the guide's live
+acceptance check before relying on Instagram extraction.
+
+The manual image workflow below and optional CSV importer remain available.
+
 ## Add images and descriptions
 
 ### 1. Choose a project and copy the image

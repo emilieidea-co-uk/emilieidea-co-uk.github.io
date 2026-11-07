@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EmilieIdea Instagram Import</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <h1>Instagram Import</h1>
+    <p>Open an Instagram profile or photo post. Review each photo and its caption here, then export your selection.</p>
+    <section aria-labelledby="read-title">
+      <h2 id="read-title">1. Read a post</h2>
+      <label>Instagram tab <select id="source-tab"></select></label>
+      <div class="actions"><button id="refresh" type="button">Refresh tabs</button><button id="read" type="button">Read Instagram tab</button></div>
+      <p>For a carousel, open each photo in Instagram and read the tab again. Keep the photo visible while reading.</p>
+    </section>
+    <section id="profile" aria-labelledby="profile-title" hidden>
+      <h2 id="profile-title">Choose a loaded profile post</h2>
+      <p id="profile-name"></p>
+      <ul id="profile-posts"></ul>
+      <p>This lists loaded photo-post links, not a complete account history. Scroll the profile and read it again to load more. Open a post, then return here and read its tab to capture it.</p>
+    </section>
+    <section id="editor" aria-labelledby="capture-title" hidden>
+      <h2 id="capture-title">2. Review and capture</h2>
+      <p id="post-url"></p>
+      <p id="warnings"></p>
+      <label>Visible photo <select id="candidate"></select></label>
+      <img id="preview" alt="Selected Instagram photo preview" referrerpolicy="no-referrer" />
+      <label>Project <select id="category"><option value="artworks">Artworks</option><option value="scrapingby">ScrapingBy</option><option value="embroideries">Embroideries</option></select></label>
+      <div class="columns">
+        <label>Photo position in post <input id="image-index" type="number" min="1" max="100" value="1" /></label>
+        <label>Total photos in post <input id="image-count" type="number" min="1" max="100" value="1" /></label>
+      </div>
+      <label>Full caption <textarea id="caption" rows="7"></textarea></label>
+      <label>Post date and time (ISO, including timezone) <input id="date" type="text" placeholder="2026-11-07T12:00:00Z" /></label>
+      <label class="check"><input id="reviewed" type="checkbox" /> I checked the full caption, date, photo position, and total against Instagram.</label>
+      <button id="capture" type="button">Add this image to export</button>
+    </section>
+    <section aria-labelledby="queue-title">
+      <h2 id="queue-title">3. Export selection</h2>
+      <p id="queue-summary"></p>
+      <ul id="queue"></ul>
+      <div class="actions"><button id="export" type="button">Download ZIP</button><button id="clear" type="button">Clear selection</button></div>
+      <p>Photos download only when exporting. Export soon: Instagram image URLs can expire. Your selection stays here until cleared.</p>
+      <p>After downloading, run <code>npm run import:instagram -- ~/Downloads/instagram-export.zip --dry-run</code>. The importer preserves existing images and adds new ones as unpublished.</p>
+    </section>
+    <p id="status" role="status" aria-live="polite"></p>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

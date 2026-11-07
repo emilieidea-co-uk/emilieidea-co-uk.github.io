@@ -21,3 +21,8 @@ node_modules/
 # os
 .DS_Store
 Thumbs.db
+
+# Local Instagram imports (keep backups out of the public repository)
+.import-tool.lock/
+.import-tool-*/
+import_tool/exports/

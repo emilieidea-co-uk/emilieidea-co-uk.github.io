@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "EmilieIdea Instagram Import",
+  "version": "0.1.0",
+  "description": "Collect selected Instagram photos and reviewed captions for the EmilieIdea portfolio.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "https://*.cdninstagram.com/*",
+    "https://*.fbcdn.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open EmilieIdea Instagram Import"
+  },
+  "minimum_chrome_version": "116"
+}

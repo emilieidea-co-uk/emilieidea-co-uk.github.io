@@ -32,12 +32,12 @@ export function validateArtworks(manifests, hasImage) {
       files.add(entry.file);
       if (typeof entry.publish !== 'boolean' || typeof entry.caption !== 'string' ||
           typeof entry.date !== 'string' || !Number.isFinite(Date.parse(entry.date))) fail('invalid publication settings, caption, or date');
+      if (!hasImage(collection, entry.file)) fail('missing image file');
       if (!entry.postUrl) continue;
       let source;
       try { source = new URL(entry.postUrl); } catch { fail('invalid Instagram URL'); }
       if (source.protocol !== 'https:' || !['www.instagram.com', 'instagram.com'].includes(source.hostname) ||
           source.pathname !== `/p/${entry.postId}/`) fail('Instagram URL does not match postId');
-      if (!hasImage(collection, entry.file)) fail('missing image file');
     }
   }
 }

@@ -1,6 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import { renderPhoto, POST_GRID_SIZES, captionFromFilename } from '../lib/photos';
+import { projectPhoto, type ProjectCollection } from '../lib/project-photos';
 
 // A 2-up grid of in-post photos — identical in treatment to the site galleries
 // (same tiles, same lightbox). Reference images in src/assets/blog/ by filename:
@@ -14,8 +15,9 @@ import { renderPhoto, POST_GRID_SIZES, captionFromFilename } from '../lib/photos
 type Item = string | { src: string; alt?: string; caption?: string };
 interface Props {
   photos: Item[];
+  collection?: ProjectCollection;
 }
-const { photos } = Astro.props;
+const { photos, collection } = Astro.props;
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '../assets/blog/**/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
@@ -31,17 +33,20 @@ const findMeta = (name: string): ImageMetadata => {
   return hit[1].default;
 };
 
-const items = await Promise.all(
+const items = (await Promise.all(
   photos.map(async (entry, i) => {
     const o = typeof entry === 'string' ? { src: entry } : entry;
-    const alt = o.alt ?? o.caption ?? captionFromFilename(o.src, i);
-    const photo = await renderPhoto(findMeta(o.src));
-    return { ...photo, alt, caption: o.caption ?? '' };
+    const project = collection ? projectPhoto(collection, o.src) : undefined;
+    if (collection && !project) return undefined;
+    const caption = o.caption ?? project?.caption ?? '';
+    const alt = o.alt ?? (caption.trim() || captionFromFilename(o.src, i));
+    const photo = await renderPhoto(project?.image ?? findMeta(o.src));
+    return { ...photo, alt, caption };
   })
-);
+)).filter((item) => item !== undefined);
 ---
 
-<section class="photo-grid post-grid" aria-label="Photographs">
+{items.length > 0 && <section class="photo-grid post-grid" aria-label="Photographs">
   {
     items.map((item) => (
       <button
@@ -65,4 +70,4 @@ const items = await Promise.all(
       </button>
     ))
   }
-</section>
+</section>}

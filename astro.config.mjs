@@ -13,7 +13,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !page.endsWith('/robots.txt') && !page.endsWith('/llms.txt'),
+      filter: (page) => !page.endsWith('/robots.txt') && !page.endsWith('/llms.txt') && !page.endsWith('/embroideries2/'),
     }),
   ],
   // Content-Security-Policy is delivered as an HTTP header from public/_headers
@@ -27,6 +27,7 @@ export default defineConfig({
   // navigation, public assets, and SEO links in development and production.
   site: 'https://emilieidea-co-uk.github.io',
   trailingSlash: 'always',
+  redirects: { '/embroideries2/': '/scrapingby/' },
 
   // Poll for edits so dev previews also update when filesystem notifications
   // are missed (for example, edits made through the shared workspace).
@@ -35,7 +36,7 @@ export default defineConfig({
       watch: {
         usePolling: true,
         interval: 300,
-        ignored: ['**/src/assets/ei_original_1/**', '**/src/assets/ei_original_2/**'],
+        ignored: ['**/src/assets/ei_original_1_em/**', '**/src/assets/ei_original_2_sc/**', '**/src/assets/ei_original_3_ar/**'],
       },
     },
   },

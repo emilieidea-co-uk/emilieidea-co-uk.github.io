@@ -1,8 +1,10 @@
 # build output
 dist/
 .output/
-src/assets/ei_original_1
-src/assets/ei_original_2
+src/assets/ei_original_1_em
+src/assets/ei_original_2_sc
+src/assets/ei_original_3_ar
+
 
 # dependencies
 node_modules/

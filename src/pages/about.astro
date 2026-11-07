@@ -6,34 +6,40 @@ import { site } from "../config";
 
 <Layout
     title="About"
-    description={`About ${site.name} — photographer and writer.`}
+    description={`About ${site.name} — embroidery, scratchboard, pottery, and printmaking.`}
 >
     <article class="page prose">
         <h1 class="page__title">About</h1>
 
         <p class="lede">
-            I'm {site.name} — a photographer and writer, and the person behind
-            the pictures on this site.
+            {site.name} brings together my work with thread, clay, and carved
+            surfaces. I’m drawn to botanical shapes, small details, and the
+            textures that appear when something is made by hand.
         </p>
 
         <p>
-            This is placeholder copy from the template. Write a few short
-            paragraphs about yourself here: where you're based, what draws you to
-            photography, the cameras or film you like, and what you tend to point
-            a lens at. Keep it personal and brief — a paragraph or three is
-            plenty.
+            <strong><a href={withBase('/artworks/')}>Artworks</a></strong> gathers
+            pottery, printmaking, and stitched pieces, including finished work
+            and experiments along the way.
         </p>
 
         <p>
-            Photography is how I slow down and pay attention — to light, weather,
-            and the quiet shape of a place. The galleries here gather what I've
-            seen along the way.
+            <strong><a href={withBase('/scrapingby/')}>ScrapingBy</a></strong>
+            follows my scratchboard work. By removing parts of a surface, I
+            reveal lines, shapes, and patterns—often inspired by flowers and
+            leaves.
         </p>
 
         <p>
-            I also keep a <a href={withBase('/blog/')}>Blog</a> with notes on
-            projects, process, and everyday discoveries.
+            <strong><a href={withBase('/')}>Embroideries</a></strong> collects
+            hand stitching, decorative pieces, and visible mending. Existing
+            fabrics, small scraps, and worn clothes offer places to begin, with
+            each stitch adding another layer to their story.
         </p>
 
+        <p>
+            This site is a place to bring those projects together, share the
+            process, and keep a record of what develops.
+        </p>
     </article>
 </Layout>

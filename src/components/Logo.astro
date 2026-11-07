@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import sealLight from '../assets/seal.png';
-import sealDark from '../assets/seal-dark.png';
+import embroideryLight from '../assets/seal.png';
+import embroideryDark from '../assets/seal-dark.png';
 import scrapingbyLight from '../assets/seal-scrapingby.png';
 import scrapingbyDark from '../assets/seal-scrapingby-dark.png';
 import artworksLight from '../assets/seal-artworks.png';
@@ -20,8 +20,8 @@ const inCategory = (route: string) => {
 };
 const [light, dark] = inCategory('/scrapingby/')
   ? [scrapingbyLight, scrapingbyDark]
-  : inCategory('/embroideries2/')
-    ? [sealLight, sealDark]
+  : path === withBase('/').replace(/\/+$/, '')
+    ? [embroideryLight, embroideryDark]
     : [artworksLight, artworksDark];
 ---
 

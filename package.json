@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "astro dev --host 0.0.0.0 --port 4321",
+    "start": "astro dev --host 0.0.0.0 --port 4321",
     "build": "astro build && node scripts/strip-unreferenced-assets.mjs",
     "preview": "astro preview",
     "astro": "astro",

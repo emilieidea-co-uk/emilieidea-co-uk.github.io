@@ -4,23 +4,20 @@ import type { ImageMetadata } from 'astro';
 import { renderPhoto, GRID_SIZES } from '../lib/photos';
 import Lightbox from './Lightbox.astro';
 import { site as siteInfo } from '../config';
-import embroideryData1 from '../data/embroideries1.json';
-import embroideryData2 from '../data/embroideries2.json';
+import embroideryData from '../data/embroideries.json';
+import scrapingbyData from '../data/scrapingby.json';
+import artworksData from '../data/artworks.json';
 
 interface Props {
-  collection: 'embroideries1' | 'embroideries2' | 'scrapingby' | 'artworks';
+  collection: 'embroideries' | 'scrapingby' | 'artworks';
   title?: string;
 }
 const { collection, title = collection.charAt(0).toUpperCase() + collection.slice(1) } = Astro.props;
 
 // Globs must be static string literals (Vite requirement).
-// Embroideries uses its JSON manifest; other projects discover images here.
-const embroideries1 = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/embroideries1/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
-  { eager: true }
-);
-const embroideries2 = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/embroideries2/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+// Each manifest chooses the published images from its project folder.
+const embroideries = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/embroideries/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
   { eager: true }
 );
 const scrapingby = import.meta.glob<{ default: ImageMetadata }>(
@@ -31,21 +28,17 @@ const artworks = import.meta.glob<{ default: ImageMetadata }>(
   '../assets/artworks/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
   { eager: true }
 );
-const files = { embroideries1, embroideries2, scrapingby, artworks }[collection];
-const embroideryData = collection === 'embroideries1' ? embroideryData1
-  : collection === 'embroideries2' ? embroideryData2 : undefined;
+const files = { embroideries, scrapingby, artworks }[collection];
+const galleryData = { embroideries: embroideryData, scrapingby: scrapingbyData, artworks: artworksData }[collection];
 
-// Preserve manifest order for published embroidery images. Other projects
-// sort by filename, numerically descending, matching their existing order.
-const embroideryMeta = new Map(embroideryData?.map((entry) => [entry.file, entry]));
-const entries = embroideryData ? embroideryData.filter((entry) => entry.publish !== false).map((entry): [string, { default: ImageMetadata }] => {
+// Preserve the reviewed order and publication settings in each manifest.
+const galleryMeta = new Map(galleryData.map((entry) => [entry.file, entry]));
+const entries = galleryData.filter((entry) => entry.publish !== false).map((entry): [string, { default: ImageMetadata }] => {
   const path = `../assets/${collection}/${entry.file}`;
   const image = files[path];
-  if (!image) throw new Error(`Missing embroidery image: ${entry.file}`);
+  if (!image) throw new Error(`Missing ${collection} image: ${entry.file}`);
   return [path, image];
-}) : Object.entries(files).sort(([pathA], [pathB]) =>
-  pathB.localeCompare(pathA, undefined, { numeric: true })
-);
+});
 
 // Fallback alt text from the filename ("01-snowy-harbor.jpg" -> "Snowy harbor")
 // for photos without a description yet, so alt / SEO text is never empty.
@@ -59,15 +52,15 @@ function captionFor(path: string, index: number): string {
 const photos = await Promise.all(
   entries.map(async ([path, mod], i) => {
     const photo = await renderPhoto(mod.default);
-    const imported = embroideryMeta.get(path.split('/').pop()!);
+    const imported = galleryMeta.get(path.split('/').pop()!);
     const caption = imported?.caption ?? '';
-    const alt = imported ? caption.replace(/\s+/g, ' ').slice(0, 160) : caption || captionFor(path, i);
+    const alt = caption.trim() ? caption.replace(/\s+/g, ' ').slice(0, 160) : captionFor(path, i);
     return { ...photo, caption, alt, date: imported?.date };
   })
 );
 
 // Structured data: an ImageGallery of ImageObjects attributed to the photographer.
-// Include captions and dates from the embroidery manifest when available.
+// Include captions and dates from the gallery manifest when available.
 const url = (path: string) => absoluteUrl(path, Astro.site);
 const base = url('/').replace(/\/$/, '');
 const jsonLd = {
@@ -99,7 +92,7 @@ const jsonLd = {
       No images yet.
     </p>
   ) : (
-    <section class:list={['gallery-grid', { 'embroidery-gallery': !!embroideryData }]} aria-label={`${title} images`}>
+    <section class="gallery-grid captioned-gallery" aria-label={`${title} images`}>
       {photos.map((photo, i) => (
         <figure class="gallery-item">
           <button
@@ -133,7 +126,7 @@ const jsonLd = {
 <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 
 <style>
-  .embroidery-gallery .gallery-caption {
+  .captioned-gallery .gallery-caption {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;

@@ -19,15 +19,14 @@ export const site = {
   nameZh: '',
   title: 'EmilieIdea',
   description:
-    'Artworks, ScrapingBy, Embroideries I, and Embroideries II — projects and a blog.',
+    'Artworks, ScrapingBy, and Embroideries — pottery, printmaking, scratchboard, and stitched work.',
 };
 
-// Left-hand navigation. Embroideries I is the home page.
+// Left-hand navigation. Embroideries is the home page.
 export const nav: NavItem[] = [
   { label: 'Artworks', href: withBase('/artworks/') },
   { label: 'ScrapingBy', href: withBase('/scrapingby/') },
-  { label: 'Embroideries I', href: withBase('/') },
-  { label: 'Embroideries II', href: withBase('/embroideries2/') },
+  { label: 'Embroideries', href: withBase('/') },
   { label: 'Blog', href: withBase('/blog/') },
   { label: 'About', href: withBase('/about/') },
   { label: 'Contact', href: withBase('/contact/') },

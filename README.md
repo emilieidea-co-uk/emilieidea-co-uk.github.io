@@ -3,7 +3,7 @@
 # Photography Portfolio + Blog — Astro Template
 
 A minimal, fast photography portfolio with a blog and a fixed left-hand
-navigation (**Artworks · ScrapingBy · Embroideries I · Embroideries II · Blog · About ·
+navigation (**Artworks · ScrapingBy · Embroideries · Blog · About ·
 Contact**) and responsive photo galleries. Built with
 [Astro](https://astro.build) and output as a fully static site you can deploy to
 any static host (Netlify, Vercel, GitHub Pages, Cloudflare Pages, S3/CDN, …).
@@ -12,7 +12,7 @@ It ships with **tasteful, generated placeholder images and example posts**, so i
 looks complete the moment you run it. Swap in your own name, links, and photos
 and you have a finished site.
 
-- **Embroideries I** is the home page; **Embroideries II**, **ScrapingBy**, and **Artworks** are separate galleries.
+- **Embroideries** is the home page; **ScrapingBy** and **Artworks** are separate galleries.
 - **Blog** combines the existing Markdown/MDX posts in one chronological list with a share button.
 - **About / Contact / License / Privacy** are simple, editable pages.
 - Layout adapts from a sidebar (desktop) to a top bar + menu (tablet & phone).
@@ -41,6 +41,12 @@ npm run dev
 
 Open **http://localhost:4321/**. Edits to pages, styles, `src/config.ts`, and
 photos in `src/assets/**` hot-reload instantly. Press `Ctrl+C` to stop.
+
+For a phone preview, connect your phone to the same Wi-Fi as your computer.
+`npm run dev` also listens on your local network at port `4321`. Open the
+**Network** URL printed by Astro on your phone and add `/artworks/` to preview
+that gallery. Use your computer's Wi-Fi IP address, rather than `localhost`,
+on the phone. Hot reload works through this address too.
 
 To preview the **real production build** (optimized WebP, sitemap, etc.):
 
@@ -84,31 +90,44 @@ swap one out.
 
 ### Project images
 
-Add images to `src/assets/embroideries1/`, `src/assets/embroideries2/`,
-`src/assets/scrapingby/`, or `src/assets/artworks/` for the matching project. ScrapingBy and Artworks use
-filenames for fallback captions. All projects use the responsive image pipeline
-and lightbox.
+The three project folders and their reviewed manifests are:
 
-Each embroidery gallery has a 20-image CSV sample, controlled separately by
-`src/data/embroideries1.json` and `src/data/embroideries2.json`. Each entry has `file`, `publish` (boolean),
-`caption`, `date` (UTC), and `postUrl`. Set `publish: false` to hide an image
-from the gallery, lightbox, and gallery metadata. Entries default to visible
-when `publish` is omitted. The JSON order sets the gallery order.
-Full CSV captions appear below images and in the lightbox.
+| Gallery | Images | Manifest | Original archive |
+| --- | --- | --- | --- |
+| Embroideries | `src/assets/embroideries/` | `src/data/embroideries.json` | `src/assets/ei_original_1_em/` |
+| ScrapingBy | `src/assets/scrapingby/` | `src/data/scrapingby.json` | `src/assets/ei_original_2_sc/` |
+| Artworks | `src/assets/artworks/` | `src/data/artworks.json` | `src/assets/ei_original_3_ar/` |
 
-To recreate a sample, run
-`python3 scripts/import-embroideries.py --collection embroideries1 --limit 20`
-or use `--collection embroideries2` for the existing collection. The importer copies
-one matching still image from each of the 20 newest captioned posts, skips
-videos and missing images, and preserves the original files. Use `--limit 20`
-to set the count or `--csv path/to/export.csv` to select a different export.
-Reimporting preserves existing `publish` values by filename; new images default
-to `publish: true`.
-Embroideries I imports from `src/assets/ei_original_1/`; Embroideries II imports
-from `src/assets/ei_original_2/`. Both original archives are ignored by Git.
-The new collection starts with all 20 images published; the existing collection
-retains its previous `publish` settings. Embroideries I opens at `/`, and
-Embroideries II opens at `/embroideries2/`.
+Embroideries retains its existing 20 images and publication choices. ScrapingBy
+contains 30 reviewed scratchboard images; Artworks contains 50 reviewed pottery,
+embroidery/mending, and printmaking images. Multiple images from one post are
+allowed. Selections exclude unrelated personal photographs and are ordered by
+post date, newest first, then carousel sequence. Work-in-progress images are
+included alongside finished pieces.
+
+Each entry has `file`, `publish` (boolean), `caption`, `date` (UTC), and `postUrl`.
+Set `publish: false` to hide it from the gallery, lightbox, and gallery metadata.
+Missing `publish` defaults to visible. Only listed, published images appear;
+unlisted files can remain in the project folders without appearing on the site.
+Captions show up to three lines, with full text available in the lightbox.
+
+Reimport the reviewed selections with:
+
+```bash
+python3 scripts/import-embroideries.py --collection embroideries --selection src/data/embroideries.json --limit 20
+python3 scripts/import-embroideries.py --collection scrapingby --selection src/data/scrapingby.json --limit 30
+python3 scripts/import-embroideries.py --collection artworks --selection src/data/artworks.json --limit 50
+```
+
+`--selection` accepts a JSON array of entries containing `file`, using the same
+shape as a gallery manifest. Captions and dates are refreshed from the CSV;
+existing `publish` values are preserved by filename. New entries default to
+published. Without `--selection`, an existing manifest is reused rather than
+replaced with unreviewed recent posts. `--csv path/to/export.csv` overrides the
+source export. Originals are preserved and excluded from Git and dev polling.
+
+Embroideries opens at `/`, ScrapingBy at `/scrapingby/`, and Artworks at
+`/artworks/`. The old `/embroideries2/` address redirects to `/scrapingby/`.
 
 The **Blog** sidebar link opens `/blog/`, listing posts from
 `src/content/blog/`, newest first. Posts use `/blog/<slug>/` URLs.
@@ -118,14 +137,13 @@ Licensing remains linked in the footer.
 
 ### 2.2 Project photos
 
-Project images live in `src/assets/embroideries1/`, `src/assets/embroideries2/`,
-`src/assets/scrapingby/`, and `src/assets/artworks/`. See **Project images** above for captions,
+Project images live in `src/assets/embroideries/`, `src/assets/scrapingby/`,
+and `src/assets/artworks/`. See **Project images** above for captions,
 publication controls, and importing the CSV sample.
 
 ### 2.3 About / Contact / License / Privacy pages
 
-- `src/pages/about.astro` — your bio and the little "fact" cards (rename/remove
-  them freely).
+- `src/pages/about.astro` — your biography and introduction to the work.
 - `src/pages/contact.astro` — the social links shown as cards.
 - `src/pages/license.astro` — image-usage terms shown to visitors.
 - `src/pages/privacy.astro` — a privacy-friendly starting policy. **Review it
@@ -136,9 +154,9 @@ publication controls, and importing the CSV sample.
 
 The blog is a folder of Markdown files. **Drop in a `.md` (or `.mdx`) file and
 it appears** — newest first, with the filename becoming the URL slug
-(`my-post.md` → `/blog/my-post/`). The template includes an example post
-(`a-first-walk.mdx`) — read it, then delete it. Until the blog has a post, it shows *"Please wait patiently for the first
-post."*
+(`my-post.md` → `/blog/my-post/`). The current post is
+`a-line-through-thread-clay-and-print.mdx`; the former example post was removed.
+Until the blog has a post, it shows *"Please wait patiently for the first post."*
 
 Start every file with frontmatter:
 
@@ -169,6 +187,14 @@ draft: false                              # true = hidden from the production bu
   <Gallery photos={["01-ridge.jpg", "02-coast.jpg"]} />
   ```
 
+  For existing project images, add `collection="embroideries"`,
+  `collection="scrapingby"`, or `collection="artworks"`. The filename must be
+  listed in that project's JSON manifest. Captions default to the project caption,
+  and `publish: false` hides the image from blog posts as well as the gallery.
+  `<Photo>` is full width; `<Gallery>` uses its existing two-column layout on
+  larger screens and one column on phones. The post
+  above demonstrates single images and a two-column pottery/printmaking pair.
+
 ### 2.5 Your domain → `astro.config.mjs`
 
 This repository is configured for its GitHub Pages organization URL:
@@ -191,9 +217,9 @@ the original artwork; the dark logo uses transparent white areas and inverted
 light ink (`max(0, 225 - channel)`). Refresh the share image with
 `npm run gen:placeholders -- --og-only`.
 
-Artworks is the main site logo on the home page and other general pages,
-favicons, and the share image. ScrapingBy uses its own seal on `/scrapingby/`,
-and Embroideries II uses the embroidery seal on `/embroideries2/`.
+Artworks is the main site logo on general pages, favicons, and the share image.
+The Embroideries home page uses the embroidery seal, and ScrapingBy uses its
+own seal on `/scrapingby/`.
 Both themes use matching sizes.
 `npm run gen:brand` creates all three source pairs using the original artwork
 and the lower-ring lettering template in `scripts/category-seal.svg`;
@@ -406,8 +432,7 @@ Webmaster Tools.
 ```
 src/
 ├── assets/
-│   ├── embroideries1/  # ← New embroidery collection
-│   ├── embroideries2/  # ← Existing embroidery collection
+│   ├── embroideries/   # ← Embroidery images
 │   ├── scrapingby/     # ← ScrapingBy project images
 │   ├── artworks/       # ← Artwork project images
 │   └── blog/           # ← Blog photos (referenced by <Photo> / <Gallery>)
@@ -417,11 +442,12 @@ src/
 │   └── blog/           #     Blog posts → /blog/<slug>/
 ├── content.config.ts   # ← Blog collections + frontmatter schema
 ├── data/
-│   ├── embroideries1.json # ← New collection metadata
-│   └── embroideries2.json # ← Existing collection metadata
+│   ├── embroideries.json # ← Embroidery publication settings and captions
+│   ├── scrapingby.json # ← Curated scratchboard selection
+│   └── artworks.json   # ← Artworks captions, dates, and publish controls
 ├── lib/photos.ts       # web-resolution image rendering (MAX_WEB)
 ├── layouts/            # Layout.astro, BlogPost.astro
-├── pages/              # index (Embroideries I), embroideries2, scrapingby, artworks, blog/*
+├── pages/              # index (Embroideries), scrapingby, artworks, blog/*
 ├── styles/global.css
 └── config.ts           # ← name, nav, social links  (START HERE)
 scripts/

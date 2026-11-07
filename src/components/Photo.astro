@@ -1,6 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import { renderPhoto, POST_SIZES, captionFromFilename } from '../lib/photos';
+import { projectPhoto, type ProjectCollection } from '../lib/project-photos';
 
 // A single in-post photo — rendered through the same web-resolution pipeline as
 // the galleries (responsive WebP, capped at MAX_WEB) and wired to the shared
@@ -11,36 +12,40 @@ import { renderPhoto, POST_SIZES, captionFromFilename } from '../lib/photos';
 //
 interface Props {
   src: string; // filename within src/assets/blog/ (subfolders allowed)
+  collection?: ProjectCollection; // optionally reuse a published project image
   alt?: string; // defaults to the caption, else derived from the filename
   caption?: string; // optional visible caption (also shown in the lightbox)
 }
-const { src, alt, caption } = Astro.props;
+const { src, alt, caption, collection } = Astro.props;
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '../assets/blog/**/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
   { eager: true }
 );
-const match = Object.entries(images).find(
+const project = collection ? projectPhoto(collection, src) : undefined;
+const match = collection ? undefined : Object.entries(images).find(
   ([path]) => path.endsWith('/' + src) || path.split('/').pop() === src
 );
-if (!match) {
+if (!collection && !match) {
   throw new Error(
     `<Photo src="${src}"> not found in src/assets/blog/. Add the file there and reference it by filename.`
   );
 }
 
-const altText = alt ?? caption ?? captionFromFilename(src);
-const photo = await renderPhoto(match[1].default);
+const captionText = caption ?? project?.caption ?? '';
+const altText = alt ?? (captionText.trim() || captionFromFilename(src));
+const image = project?.image ?? match?.[1].default;
+const photo = image ? await renderPhoto(image) : undefined;
 ---
 
-<figure class="post-figure">
+{photo && <figure class="post-figure">
   <button
     class="photo-tile"
     type="button"
     aria-label={`${altText} — view larger`}
     data-full={photo.full}
     data-alt={altText}
-    data-caption={caption ?? ''}
+    data-caption={captionText}
   >
     <img
       class="photo__img"
@@ -53,5 +58,5 @@ const photo = await renderPhoto(match[1].default);
       draggable={false}
     />
   </button>
-  {caption && <figcaption class="post-figure__caption">{caption}</figcaption>}
-</figure>
+  {captionText && <figcaption class="post-figure__caption">{captionText}</figcaption>}
+</figure>}

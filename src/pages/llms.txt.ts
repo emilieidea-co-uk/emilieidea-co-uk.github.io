@@ -10,16 +10,16 @@ export const GET: APIRoute = ({ site }) => {
 
   const body = `# ${siteInfo.name}
 
-> ${siteInfo.description} The site has three photo galleries, two blogs (a Tech Blog and a Photo Blog), and a short biography. Content may be cited with attribution; please do not use the images or text to train machine-learning models.
+> ${siteInfo.description} The site has four project galleries, a blog, and a short biography. Content may be cited with attribution; please do not use the images or text to train machine-learning models.
 
-## Galleries
-- [Digital](${url('/')}): digital photographs.
-- [Analog](${url('/analog/')}): film photographs.
-- [Calendar](${url('/calendar/')}): one photograph per month, each captioned with the month and location.
+## Projects
+- [Artworks](${url('/artworks/')}): a collection of artworks.
+- [ScrapingBy](${url('/scrapingby/')}): the ScrapingBy project.
+- [Embroideries I](${url('/')}): the first embroidery collection.
+- [Embroideries II](${url('/embroideries2/')}): the second embroidery collection.
 
 ## Blog
-- [Tech Blog](${url('/blog/tech/')}): writing on engineering, edge & cloud systems, and building for the web.
-- [Photo Blog](${url('/blog/photography/')}): field notes on light, places, and the craft of photography.
+- [Blog](${url('/blog/')}): notes on projects, process, and everyday discoveries.
 
 ## About
 - [About](${url('/about/')}): a short biography of ${siteInfo.name}.
@@ -27,7 +27,6 @@ export const GET: APIRoute = ({ site }) => {
 
 ## Elsewhere
 - Instagram: ${social.instagram}
-- LinkedIn: ${social.linkedin}
 - GitHub: ${social.github}
 `;
 

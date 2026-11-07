@@ -12,33 +12,31 @@ export interface NavItem {
 }
 
 export const site = {
-  name: 'Your Name',
+  name: 'EmilieIdea',
   // Optional second-script name (e.g. a Chinese 中文名) shown under the brand and
   // in a couple of prose pages. Leave it '' to hide it everywhere. See the README
   // for how to self-host a font subset so it renders identically on every device.
   nameZh: '',
-  title: 'Your Name',
+  title: 'EmilieIdea',
   description:
-    'A minimal photography portfolio and blog — digital and film galleries, a photo-a-month calendar, and two blogs.',
+    'Artworks, ScrapingBy, Embroideries I, and Embroideries II — projects and a blog.',
 };
 
-// Left-hand navigation. "Digital" is the home page and shows by default.
+// Left-hand navigation. Embroideries I is the home page.
 export const nav: NavItem[] = [
-  { label: 'Digital', href: withBase('/') },
-  { label: 'Analog', href: withBase('/analog/') },
-  { label: 'Calendar', href: withBase('/calendar/') },
-  { label: 'Tech Blog', href: withBase('/blog/tech/') },
-  { label: 'Photo Blog', href: withBase('/blog/photography/') },
+  { label: 'Artworks', href: withBase('/artworks/') },
+  { label: 'ScrapingBy', href: withBase('/scrapingby/') },
+  { label: 'Embroideries I', href: withBase('/') },
+  { label: 'Embroideries II', href: withBase('/embroideries2/') },
+  { label: 'Blog', href: withBase('/blog/') },
   { label: 'About', href: withBase('/about/') },
   { label: 'Contact', href: withBase('/contact/') },
-  { label: 'License', href: withBase('/license/') },
 ];
 
 // Social / external links shown in the sidebar and on the contact page. Replace
 // the placeholders with your own. If you drop or add one, also update the
 // matching <Icon> in Sidebar.astro and the list in Contact.astro.
 export const social = {
-  instagram: 'https://www.instagram.com/yourusername',
-  linkedin: 'https://www.linkedin.com/in/yourusername',
-  github: 'https://github.com/yourusername',
+  instagram: 'https://www.instagram.com/emilieidea_zugou',
+  github: 'https://github.com/emilieidea-co-uk',
 };

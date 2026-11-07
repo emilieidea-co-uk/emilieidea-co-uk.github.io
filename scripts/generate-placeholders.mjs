@@ -6,7 +6,6 @@
 //
 // - Digital  → clean, cool landscape gradients   (src/assets/digital/)
 // - Analog   → warm, faded, grainy, vignetted     (src/assets/analog/)
-// - Calendar → one per month                      (src/assets/calendar/)
 // - Blog     → a few photos for the example post  (src/assets/blog/)
 // - og.jpg   → the social-share image             (public/)
 //
@@ -143,23 +142,7 @@ async function build(name, palettes, film) {
   }
 }
 
-// Calendar: one image per month. Filenames are YYYY-MM.jpg; the Calendar page
-// shows every entry whose image is present (see src/data/calendar.ts).
-async function buildCalendar() {
-  const months = [];
-  for (let m = 1; m <= 12; m++) months.push(`2025-${String(m).padStart(2, '0')}`);
-  const dir = join(ASSETS, 'calendar');
-  await mkdir(dir, { recursive: true });
-  for (let i = 0; i < months.length; i++) {
-    const file = `${months[i]}.jpg`;
-    await sharp(Buffer.from(svg(digitalPalettes[i % digitalPalettes.length], i, { film: false })))
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toFile(join(dir, file));
-    console.log('generated', `calendar/${file}`);
-  }
-}
-
-// Blog: a few photos referenced by the example Photo Blog post (an .mdx file
+// Blog: a few photos referenced by the example Blog post (an .mdx file
 // that uses <Photo> and <Gallery>). Named descriptively so the auto-captions
 // read nicely.
 async function buildBlog() {
@@ -180,7 +163,7 @@ async function buildBlog() {
 async function buildOgImage() {
   const PUBLIC = join(__dirname, '..', 'public');
   await mkdir(PUBLIC, { recursive: true });
-  const SEAL_RED = '#d03930'; // matches the seal logo's ink color
+  const BRAND_INK = '#111111'; // matches the black-and-white logo
   const { name, nameZh } = await readSiteName();
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -203,19 +186,19 @@ async function buildOgImage() {
     const wZh = await trimmedWidth(probe(nameZh, zhFont, F));
     const enY = 460, zhY = 506, ruleY = 494, gap = 14;
     text = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
-      <text x="${cx}" y="${enY}" text-anchor="middle" font-family="${enFont}" font-size="${F}" fill="${SEAL_RED}">${esc(name)}</text>
-      <line x1="${(cx - wEn / 2).toFixed(1)}" y1="${ruleY}" x2="${(cx - wZh / 2 - gap).toFixed(1)}" y2="${ruleY}" stroke="${SEAL_RED}" stroke-width="2"/>
-      <text x="${cx}" y="${zhY}" text-anchor="middle" font-family="${zhFont}" font-size="${F}" fill="${SEAL_RED}">${esc(nameZh)}</text>
-      <line x1="${(cx + wZh / 2 + gap).toFixed(1)}" y1="${ruleY}" x2="${(cx + wEn / 2).toFixed(1)}" y2="${ruleY}" stroke="${SEAL_RED}" stroke-width="2"/>
+      <text x="${cx}" y="${enY}" text-anchor="middle" font-family="${enFont}" font-size="${F}" fill="${BRAND_INK}">${esc(name)}</text>
+      <line x1="${(cx - wEn / 2).toFixed(1)}" y1="${ruleY}" x2="${(cx - wZh / 2 - gap).toFixed(1)}" y2="${ruleY}" stroke="${BRAND_INK}" stroke-width="2"/>
+      <text x="${cx}" y="${zhY}" text-anchor="middle" font-family="${zhFont}" font-size="${F}" fill="${BRAND_INK}">${esc(nameZh)}</text>
+      <line x1="${(cx + wZh / 2 + gap).toFixed(1)}" y1="${ruleY}" x2="${(cx + wEn / 2).toFixed(1)}" y2="${ruleY}" stroke="${BRAND_INK}" stroke-width="2"/>
     </svg>`;
   } else {
     // Single centered name.
     text = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
-      <text x="${cx}" y="488" text-anchor="middle" font-family="${enFont}" font-size="${F}" fill="${SEAL_RED}">${esc(name)}</text>
+      <text x="${cx}" y="488" text-anchor="middle" font-family="${enFont}" font-size="${F}" fill="${BRAND_INK}">${esc(name)}</text>
     </svg>`;
   }
 
-  const illu = await sharp(join(__dirname, '..', 'src', 'assets', 'seal.png')).resize({ height: SEAL_H }).png().toBuffer();
+  const illu = await sharp(join(__dirname, '..', 'src', 'assets', 'seal-artworks.png')).resize({ height: SEAL_H }).png().toBuffer();
   const im = await sharp(illu).metadata();
   await sharp({ create: { width: 1200, height: 630, channels: 3, background: '#fcfcfb' } })
     .composite([
@@ -232,7 +215,6 @@ async function buildOgImage() {
 if (!process.argv.includes('--og-only')) {
   await build('digital', digitalPalettes, false);
   await build('analog', analogPalettes.slice(0, 4), true);
-  await buildCalendar();
   await buildBlog();
 }
 await buildOgImage();

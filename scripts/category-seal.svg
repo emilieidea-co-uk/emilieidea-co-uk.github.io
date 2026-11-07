@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="629" height="653" viewBox="0 0 629 653">
+  <defs>
+    <!-- Clear only the lower text ring; preserve the EI disk, stars and border. -->
+    <mask id="category-ring">
+      <rect width="629" height="653" fill="black"/>
+      <circle cx="316.5" cy="312" r="284" fill="white"/>
+      <circle cx="316.5" cy="312" r="202" fill="black"/>
+      <rect width="629" height="350" fill="black"/>
+    </mask>
+  </defs>
+  <image width="629" height="653" xlink:href="{{SOURCE_IMAGE}}"/>
+  <rect width="629" height="653" fill="white" mask="url(#category-ring)"/>
+  <g fill="#080808" font-family="Times New Roman, Times, serif" font-size="76" text-anchor="middle">{{CATEGORY_LETTERS}}</g>
+</svg>

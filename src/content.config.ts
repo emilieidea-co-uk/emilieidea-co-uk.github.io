@@ -1,9 +1,7 @@
 // ────────────────────────────────────────────────────────────────────────────
-//  Blog content collections.
+//  Blog content collection.
 //
-//  Two blogs, each a folder of Markdown files:
-//    • Tech Blog        → src/content/tech/*.md         (URL: /blog/tech/<slug>)
-//    • Photo Blog → src/content/photography/*.md  (URL: /blog/photography/<slug>)
+//  Blog posts live in src/content/blog/ (URL: /blog/<slug>).
 //
 //  The filename (without ".md") becomes the URL slug. Add a file, fill in the
 //  frontmatter below, write Markdown, and it appears — sorted newest-first by
@@ -25,14 +23,9 @@ const blogSchema = ({ image }: { image: () => any }) =>
     coverAlt: z.string().default(''),
   });
 
-const tech = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/tech' }),
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
   schema: blogSchema,
 });
 
-const photography = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/photography' }),
-  schema: blogSchema,
-});
-
-export const collections = { tech, photography };
+export const collections = { blog };

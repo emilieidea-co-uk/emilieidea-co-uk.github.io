@@ -394,20 +394,20 @@ a {
   border-radius: 3px;
 }
 
-/* Calendar gallery — a captioned grid (month + location under each photo) */
-.calendar-grid {
+/* Project galleries — a captioned grid */
+.gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: calc(var(--gap) + 0.7rem) var(--gap);
 }
 
-.calendar-item {
+.gallery-item {
   margin: 0;
   display: flex;
   flex-direction: column;
 }
 
-.calendar-caption {
+.gallery-caption {
   margin-top: 0.55rem;
   font-size: 1rem;
   color: var(--muted);
@@ -1285,7 +1285,7 @@ a {
 /* ── Phones: single-column gallery ─────────────────────────────────────── */
 @media (max-width: 640px) {
   .photo-grid,
-  .calendar-grid {
+  .gallery-grid {
     grid-template-columns: 1fr;
   }
 

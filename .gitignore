@@ -1,6 +1,8 @@
 # build output
 dist/
 .output/
+src/assets/ei_original_1
+src/assets/ei_original_2
 
 # dependencies
 node_modules/

@@ -2,9 +2,9 @@
 
 # Photography Portfolio + Blog — Astro Template
 
-A minimal, fast photography portfolio with two blogs and a fixed left-hand
-navigation (**Digital · Analog · Calendar · Tech Blog · Photo Blog · About ·
-Contact · License**) and responsive photo galleries. Built with
+A minimal, fast photography portfolio with a blog and a fixed left-hand
+navigation (**Artworks · ScrapingBy · Embroideries I · Embroideries II · Blog · About ·
+Contact**) and responsive photo galleries. Built with
 [Astro](https://astro.build) and output as a fully static site you can deploy to
 any static host (Netlify, Vercel, GitHub Pages, Cloudflare Pages, S3/CDN, …).
 
@@ -12,17 +12,15 @@ It ships with **tasteful, generated placeholder images and example posts**, so i
 looks complete the moment you run it. Swap in your own name, links, and photos
 and you have a finished site.
 
-- **Digital** is the home page — your digital photographs.
-- **Analog** is a second gallery for film work.
-- **Calendar** shows one photo per month, newest first.
-- **Tech Blog** and **Photo Blog** are Markdown/MDX blogs with a share button.
+- **Embroideries I** is the home page; **Embroideries II**, **ScrapingBy**, and **Artworks** are separate galleries.
+- **Blog** combines the existing Markdown/MDX posts in one chronological list with a share button.
 - **About / Contact / License / Privacy** are simple, editable pages.
 - Layout adapts from a sidebar (desktop) to a top bar + menu (tablet & phone).
 - Click any photo for a full-screen lightbox (arrow keys / swipe-friendly).
 - Light/dark theme toggle, privacy-friendly by default, strong SEO out of the box.
 
 > **Everything you see is a placeholder.** The photos are generated gradients,
-> the name is "Your Name", and the two blog posts are examples. The steps below
+> the name is "EmilieIdea", and the blog post is an example. The steps below
 > walk you through making it your own. Also, check this template in production https://xdqin.com/,
 > how to deploy the site on cloudflare https://xdqin.com/blog/tech/building-and-deploying-xdqin-com-on-cloudflare/ 
 
@@ -67,15 +65,14 @@ This one file drives the brand, page titles, SEO, JSON-LD, and `llms.txt`:
 
 ```ts
 export const site = {
-  name: 'Your Name',
+  name: 'EmilieIdea',
   nameZh: '',                 // optional second-script name (see §4); '' hides it
-  title: 'Your Name',
+  title: 'EmilieIdea',
   description: 'A minimal photography portfolio and blog…',
 };
 
 export const social = {
   instagram: 'https://www.instagram.com/yourusername',
-  linkedin:  'https://www.linkedin.com/in/yourusername',
   github:    'https://github.com/yourusername',
 };
 ```
@@ -85,36 +82,47 @@ To change the social icons themselves, edit the `<Icon>` list in
 (both reference `social`). An unused icon (`scholar`) is included if you'd rather
 swap one out.
 
-### 2.2 Your photos → `src/assets/digital/` and `src/assets/analog/`
+### Project images
 
-- Drop `.jpg`, `.png`, or `.webp` files into the folder for that gallery — they
-  appear automatically.
-- **Filename = order + caption.** Files sort by name, so prefix them to order
-  (`01-…`, `02-…`); the rest becomes the caption: `01-golden-hour.jpg` →
-  *"Golden hour."*
-- Delete the bundled `digital-01.jpg …` / `analog-01.jpg …` placeholders once you
-  add your own.
-- **Upload full-resolution exports** — see *§3 How photos are served* for how
-  they're downscaled for the web.
-- Optional richer captions ("Month Year, Location") live in
-  `src/data/galleries.ts`, keyed by filename.
+Add images to `src/assets/embroideries1/`, `src/assets/embroideries2/`,
+`src/assets/scrapingby/`, or `src/assets/artworks/` for the matching project. ScrapingBy and Artworks use
+filenames for fallback captions. All projects use the responsive image pipeline
+and lightbox.
 
-### 2.3 Calendar → `src/data/calendar.ts` + `src/assets/calendar/`
+Each embroidery gallery has a 20-image CSV sample, controlled separately by
+`src/data/embroideries1.json` and `src/data/embroideries2.json`. Each entry has `file`, `publish` (boolean),
+`caption`, `date` (UTC), and `postUrl`. Set `publish: false` to hide an image
+from the gallery, lightbox, and gallery metadata. Entries default to visible
+when `publish` is omitted. The JSON order sets the gallery order.
+Full CSV captions appear below images and in the lightbox.
 
-The **Calendar** shows one photo per month — every entry that has a matching
-image, newest first. To add a month:
+To recreate a sample, run
+`python3 scripts/import-embroideries.py --collection embroideries1 --limit 20`
+or use `--collection embroideries2` for the existing collection. The importer copies
+one matching still image from each of the 20 newest captioned posts, skips
+videos and missing images, and preserves the original files. Use `--limit 20`
+to set the count or `--csv path/to/export.csv` to select a different export.
+Reimporting preserves existing `publish` values by filename; new images default
+to `publish: true`.
+Embroideries I imports from `src/assets/ei_original_1/`; Embroideries II imports
+from `src/assets/ei_original_2/`. Both original archives are ignored by Git.
+The new collection starts with all 20 images published; the existing collection
+retains its previous `publish` settings. Embroideries I opens at `/`, and
+Embroideries II opens at `/embroideries2/`.
 
-1. Drop the image in `src/assets/calendar/` (e.g. `2026-07.jpg`).
-2. Add an entry in `src/data/calendar.ts`:
+The **Blog** sidebar link opens `/blog/`, listing posts from
+`src/content/blog/`, newest first. Posts use `/blog/<slug>/` URLs.
+The former Tech Blog content and pages are removed. The former Digital and
+Analog pages are removed.
+Licensing remains linked in the footer.
 
-   ```ts
-   { year: 2026, month: 7, location: 'Lisbon, Portugal', file: '2026-07.jpg' },
-   ```
+### 2.2 Project photos
 
-It renders as **"July 2026, Lisbon, Portugal."** Entries whose image isn't
-present yet are skipped, so you can stage future months.
+Project images live in `src/assets/embroideries1/`, `src/assets/embroideries2/`,
+`src/assets/scrapingby/`, and `src/assets/artworks/`. See **Project images** above for captions,
+publication controls, and importing the CSV sample.
 
-### 2.4 About / Contact / License / Privacy pages
+### 2.3 About / Contact / License / Privacy pages
 
 - `src/pages/about.astro` — your bio and the little "fact" cards (rename/remove
   them freely).
@@ -124,13 +132,12 @@ present yet are skipped, so you can stage future months.
   before publishing** (it's a sensible default, not legal advice) and update the
   `lastUpdated` date.
 
-### 2.5 Blog posts → `src/content/tech/` and `src/content/photography/`
+### 2.4 Blog posts → `src/content/blog/`
 
-Each blog is a folder of Markdown files. **Drop in a `.md` (or `.mdx`) file and
+The blog is a folder of Markdown files. **Drop in a `.md` (or `.mdx`) file and
 it appears** — newest first, with the filename becoming the URL slug
-(`my-post.md` → `/blog/tech/my-post`). The template includes one example post in
-each folder (`getting-started.md`, `a-first-walk.mdx`) — read them, then delete
-them. Until a blog has a post, it shows *"Please wait patiently for the first
+(`my-post.md` → `/blog/my-post/`). The template includes an example post
+(`a-first-walk.mdx`) — read it, then delete it. Until the blog has a post, it shows *"Please wait patiently for the first
 post."*
 
 Start every file with frontmatter:
@@ -162,7 +169,7 @@ draft: false                              # true = hidden from the production bu
   <Gallery photos={["01-ridge.jpg", "02-coast.jpg"]} />
   ```
 
-### 2.6 Your domain → `astro.config.mjs`
+### 2.5 Your domain → `astro.config.mjs`
 
 This repository is configured for its GitHub Pages organization URL:
 
@@ -176,12 +183,21 @@ origin. No `base` is needed because the site is served at the domain root.
 Internal links use the shared helpers in `src/lib/urls.ts`.
 For a custom domain at the domain root, update `site`.
 
-### 2.7 Your logo (optional)
+### 2.6 Your logo (optional)
 
-The template generates a neutral "aperture seal" mark. To use your own, replace
-`src/assets/logo-seal-light.png` (your mark on a transparent background) and
-`src/assets/logo-seal-dark.png` (your mark on white), then run `npm run gen:icons`
-(see §4). Or just replace `src/assets/seal.png` / `seal-dark.png` directly.
+The logo source is `src/assets/ei_logo.jpg`. To change it, replace that file,
+then run `npm run gen:brand` and `npm run gen:icons`. The light logo preserves
+the original artwork; the dark logo uses transparent white areas and inverted
+light ink (`max(0, 225 - channel)`). Refresh the share image with
+`npm run gen:placeholders -- --og-only`.
+
+Artworks is the main site logo on the home page and other general pages,
+favicons, and the share image. ScrapingBy uses its own seal on `/scrapingby/`,
+and Embroideries II uses the embroidery seal on `/embroideries2/`.
+Both themes use matching sizes.
+`npm run gen:brand` creates all three source pairs using the original artwork
+and the lower-ring lettering template in `scripts/category-seal.svg`;
+`npm run gen:icons` creates the six display logos and the default app icons.
 
 ---
 
@@ -213,9 +229,9 @@ use the `sharp` that ships with Astro.
 ```bash
 npm run setup              # runs all three of the steps below, in order
 # — or individually —
-npm run gen:brand          # writes the two source seals (your logo mark)
+npm run gen:brand          # converts ei_logo.jpg into the two source seals
 npm run gen:icons          # derives seal.png/seal-dark.png + favicons from them
-npm run gen:placeholders   # rebuilds gallery/calendar/blog placeholders + og.jpg
+npm run gen:placeholders   # rebuilds gallery/blog placeholders + og.jpg
 ```
 
 - The **OG share image** (`public/og.jpg`) reads your name from `src/config.ts`,
@@ -379,7 +395,7 @@ Apache, or S3/CloudFront, translate those rules into the server/CDN config (see
 ### Custom domain
 
 Add your domain in your host's dashboard, then set `site` in `astro.config.mjs`
-to that URL (see §2.6). After deploying, submit
+to that URL (see §2.5). After deploying, submit
 `https://your-domain/sitemap-index.xml` to Google Search Console and Bing
 Webmaster Tools.
 
@@ -390,22 +406,22 @@ Webmaster Tools.
 ```
 src/
 ├── assets/
-│   ├── digital/        # ← Digital gallery images
-│   ├── analog/         # ← Analog (film) gallery images
-│   ├── calendar/       # ← Calendar images (YYYY-MM.jpg)
+│   ├── embroideries1/  # ← New embroidery collection
+│   ├── embroideries2/  # ← Existing embroidery collection
+│   ├── scrapingby/     # ← ScrapingBy project images
+│   ├── artworks/       # ← Artwork project images
 │   └── blog/           # ← Blog photos (referenced by <Photo> / <Gallery>)
-├── components/         # Sidebar, PhotoGrid, Calendar, Lightbox, Logo, Icon,
+├── components/         # Sidebar, PhotoGrid, Lightbox, Logo, Icon,
 │                       #   Photo, Gallery, ShareButton, PostCard, BaseSchema
 ├── content/            # ← Blog posts (Markdown / MDX)
-│   ├── tech/           #     Tech Blog   (example: getting-started.md)
-│   └── photography/    #     Photo Blog  (example: a-first-walk.mdx)
+│   └── blog/           #     Blog posts → /blog/<slug>/
 ├── content.config.ts   # ← Blog collections + frontmatter schema
 ├── data/
-│   ├── calendar.ts     # ← Calendar entries (month + location)
-│   └── galleries.ts    # ← Optional per-photo captions for the galleries
+│   ├── embroideries1.json # ← New collection metadata
+│   └── embroideries2.json # ← Existing collection metadata
 ├── lib/photos.ts       # web-resolution image rendering (MAX_WEB)
 ├── layouts/            # Layout.astro, BlogPost.astro
-├── pages/              # index (Digital), analog, calendar, about, contact, blog/*
+├── pages/              # index (Embroideries I), embroideries2, scrapingby, artworks, blog/*
 ├── styles/global.css
 └── config.ts           # ← name, nav, social links  (START HERE)
 scripts/

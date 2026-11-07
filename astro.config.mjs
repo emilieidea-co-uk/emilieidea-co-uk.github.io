@@ -28,6 +28,18 @@ export default defineConfig({
   site: 'https://emilieidea-co-uk.github.io',
   trailingSlash: 'always',
 
+  // Poll for edits so dev previews also update when filesystem notifications
+  // are missed (for example, edits made through the shared workspace).
+  vite: {
+    server: {
+      watch: {
+        usePolling: true,
+        interval: 300,
+        ignored: ['**/src/assets/ei_original_1/**', '**/src/assets/ei_original_2/**'],
+      },
+    },
+  },
+
   // Preserve Astro's pre-v7 HTML whitespace handling. Astro 7 changed the
   // default `compressHTML` from `true` to `'jsx'`, which strips whitespace with
   // JSX rules and drops the literal spaces this theme relies on between text and

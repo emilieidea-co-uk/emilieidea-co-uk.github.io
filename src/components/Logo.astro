@@ -2,18 +2,33 @@
 import { Image } from 'astro:assets';
 import sealLight from '../assets/seal.png';
 import sealDark from '../assets/seal-dark.png';
+import scrapingbyLight from '../assets/seal-scrapingby.png';
+import scrapingbyDark from '../assets/seal-scrapingby-dark.png';
+import artworksLight from '../assets/seal-artworks.png';
+import artworksDark from '../assets/seal-artworks-dark.png';
+import { withBase } from '../lib/urls';
 
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props;
 const base = className ? `${className} ` : '';
+const path = Astro.url.pathname.replace(/\/+$/, '');
+const inCategory = (route: string) => {
+  const root = withBase(route).replace(/\/+$/, '');
+  return path === root || path.startsWith(`${root}/`);
+};
+const [light, dark] = inCategory('/scrapingby/')
+  ? [scrapingbyLight, scrapingbyDark]
+  : inCategory('/embroideries2/')
+    ? [sealLight, sealDark]
+    : [artworksLight, artworksDark];
 ---
 
 {/* Both variants are rendered; CSS shows the one matching the active theme. */}
 <Image
   class={`${base}brand__mark--light`}
-  src={sealLight}
+  src={light}
   alt=""
   widths={[200, 400, 600]}
   sizes="(max-width: 1023px) 118px, 158px"
@@ -22,7 +37,7 @@ const base = className ? `${className} ` : '';
 />
 <Image
   class={`${base}brand__mark--dark`}
-  src={sealDark}
+  src={dark}
   alt=""
   widths={[200, 400, 600]}
   sizes="(max-width: 1023px) 118px, 158px"

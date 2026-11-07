@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:4321/zugou/**. Edits to pages, styles, `src/config.ts`, and
+Open **http://localhost:4321/**. Edits to pages, styles, `src/config.ts`, and
 photos in `src/assets/**` hot-reload instantly. Press `Ctrl+C` to stop.
 
 To preview the **real production build** (optimized WebP, sitemap, etc.):
@@ -164,17 +164,17 @@ draft: false                              # true = hidden from the production bu
 
 ### 2.6 Your domain → `astro.config.mjs`
 
-This repository is configured for its GitHub Pages project URL:
+This repository is configured for its GitHub Pages organization URL:
 
 ```js
 site: 'https://emilieidea-co-uk.github.io',
-base: '/zugou',
 trailingSlash: 'always',
 ```
 
 Canonical tags, Open Graph, sitemap links, `llms.txt`, and JSON-LD use this
-origin and base path. Internal links use the shared helpers in `src/lib/urls.ts`.
-For a custom domain at the domain root, update `site` and remove `base`.
+origin. No `base` is needed because the site is served at the domain root.
+Internal links use the shared helpers in `src/lib/urls.ts`.
+For a custom domain at the domain root, update `site`.
 
 ### 2.7 Your logo (optional)
 
@@ -325,9 +325,10 @@ host-specific configuration to maintain.
 
 ### GitHub Pages — this repository
 
-The site publishes to **https://emilieidea-co-uk.github.io/zugou/**.
+The site publishes to **https://emilieidea-co-uk.github.io/** from the
+`emilieidea-co-uk/emilieidea-co-uk.github.io` repository.
 
-1. In [repository Pages settings](https://github.com/emilieidea-co-uk/zugou/settings/pages),
+1. In [repository Pages settings](https://github.com/emilieidea-co-uk/emilieidea-co-uk.github.io/settings/pages),
    select **GitHub Actions** as the **Source** under **Build and deployment**.
 2. Commit and push the site changes, including `.github/workflows/deploy.yml`
    and `package-lock.json`, to `master`.
@@ -340,15 +341,12 @@ The workflow uses Node 22 and runs `npm run build`, including the cleanup of
 unreferenced source images, before uploading `dist/`. Do not commit `dist/`.
 
 Local development still works with `npm run dev` at
-**http://localhost:4321/zugou/**, including hot reload. For a production check,
-run `npm run build` followed by `npm run preview` and open the `/zugou/` URL
+**http://localhost:4321/**, including hot reload. For a production check,
+run `npm run build` followed by `npm run preview` and open the root URL
 printed by Astro.
 
 GitHub Pages does not apply `public/_headers`. The site works there, but the
 custom HTTP security headers documented below are not enabled by that file.
-Also, crawlers look for `robots.txt` at the domain root: this project's
-`/zugou/robots.txt` does not control crawling of the domain. Manage the root
-`https://emilieidea-co-uk.github.io/robots.txt` separately if needed.
 
 ### Connect your Git repo (recommended)
 

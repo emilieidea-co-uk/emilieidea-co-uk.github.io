@@ -175,7 +175,7 @@ async function buildOgImage() {
   const zhFont = 'Noto Serif CJK SC, Songti SC, serif';
   const probe = (t, ff, fs) =>
     `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="240"><rect width="1800" height="240" fill="#fff"/><text x="20" y="160" font-family="${ff}" font-size="${fs}" fill="#000">${esc(t)}</text></svg>`;
-  const SEAL_H = 300;
+  const LOGO_H = 300;
   const F = 34;
   const cx = 600;
 
@@ -198,7 +198,7 @@ async function buildOgImage() {
     </svg>`;
   }
 
-  const illu = await sharp(join(__dirname, '..', 'src', 'assets', 'seal-artworks.png')).resize({ height: SEAL_H }).png().toBuffer();
+  const illu = await sharp(join(__dirname, '..', 'src', 'assets', 'ei-artworks-light.png')).resize({ height: LOGO_H }).png().toBuffer();
   const im = await sharp(illu).metadata();
   await sharp({ create: { width: 1200, height: 630, channels: 3, background: '#fcfcfb' } })
     .composite([

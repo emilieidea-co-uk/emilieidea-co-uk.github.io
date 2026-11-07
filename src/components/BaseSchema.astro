@@ -1,6 +1,6 @@
 ---
 import { absoluteUrl } from '../lib/urls';
-// Site-wide JSON-LD: identifies the site and the photographer so search engines
+// Site-wide JSON-LD: identifies the site and the artist so search engines
 // and AI answer engines can understand who/what this is. Gallery pages add their
 // own ImageGallery / ImageObject graphs.
 import { site, social } from '../config';
@@ -24,7 +24,7 @@ const graph = {
       '@id': `${base}/#person`,
       name: site.name,
       url: `${base}/`,
-      jobTitle: 'Photographer',
+      jobTitle: 'Artist',
       sameAs: [social.instagram, social.github],
     },
   ],

@@ -1,11 +1,11 @@
 ---
 import { Image } from 'astro:assets';
-import embroideryLight from '../assets/seal.png';
-import embroideryDark from '../assets/seal-dark.png';
-import scrapingbyLight from '../assets/seal-scrapingby.png';
-import scrapingbyDark from '../assets/seal-scrapingby-dark.png';
-import artworksLight from '../assets/seal-artworks.png';
-import artworksDark from '../assets/seal-artworks-dark.png';
+import embroideryLight from '../assets/ei-embroideries-light.png';
+import embroideryDark from '../assets/ei-embroideries-dark.png';
+import scrapingbyLight from '../assets/ei-scrapingby-light.png';
+import scrapingbyDark from '../assets/ei-scrapingby-dark.png';
+import artworksLight from '../assets/ei-artworks-light.png';
+import artworksDark from '../assets/ei-artworks-dark.png';
 import { withBase } from '../lib/urls';
 
 interface Props {
@@ -20,7 +20,7 @@ const inCategory = (route: string) => {
 };
 const [light, dark] = inCategory('/scrapingby/')
   ? [scrapingbyLight, scrapingbyDark]
-  : path === withBase('/').replace(/\/+$/, '')
+  : inCategory('/embroideries/')
     ? [embroideryLight, embroideryDark]
     : [artworksLight, artworksDark];
 ---

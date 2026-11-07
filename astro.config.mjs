@@ -13,7 +13,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !page.endsWith('/robots.txt') && !page.endsWith('/llms.txt') && !page.endsWith('/embroideries2/'),
+      filter: (page) => !page.endsWith('/robots.txt') && !page.endsWith('/llms.txt') && !page.endsWith('/embroideries2/') && !page.endsWith('/artworks/'),
     }),
   ],
   // Content-Security-Policy is delivered as an HTTP header from public/_headers
@@ -27,7 +27,7 @@ export default defineConfig({
   // navigation, public assets, and SEO links in development and production.
   site: 'https://emilieidea-co-uk.github.io',
   trailingSlash: 'always',
-  redirects: { '/embroideries2/': '/scrapingby/' },
+  redirects: { '/embroideries2/': '/scrapingby/', '/artworks/': '/' },
 
   // Poll for edits so dev previews also update when filesystem notifications
   // are missed (for example, edits made through the shared workspace).

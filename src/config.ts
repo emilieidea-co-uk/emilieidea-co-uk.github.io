@@ -22,11 +22,11 @@ export const site = {
     'Artworks, ScrapingBy, and Embroideries — pottery, printmaking, scratchboard, and stitched work.',
 };
 
-// Left-hand navigation. Embroideries is the home page.
+// Left-hand navigation. Artworks is the home page.
 export const nav: NavItem[] = [
-  { label: 'Artworks', href: withBase('/artworks/') },
+  { label: 'Artworks', href: withBase('/') },
   { label: 'ScrapingBy', href: withBase('/scrapingby/') },
-  { label: 'Embroideries', href: withBase('/') },
+  { label: 'Embroideries', href: withBase('/embroideries/') },
   { label: 'Blog', href: withBase('/blog/') },
   { label: 'About', href: withBase('/about/') },
   { label: 'Contact', href: withBase('/contact/') },

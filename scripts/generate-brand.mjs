@@ -11,7 +11,7 @@ const ASSETS = join(SCRIPTS, '..', 'src', 'assets');
 const source = join(ASSETS, 'ei_logo.jpg');
 
 const original = await sharp(source).rotate().png().toBuffer();
-const template = await readFile(join(SCRIPTS, 'category-seal.svg'), 'utf8');
+const template = await readFile(join(SCRIPTS, 'ei-logo-template.svg'), 'utf8');
 const sourceImage = `data:image/png;base64,${original.toString('base64')}`;
 
 // Place individual SVG glyphs on the lower arc. This also works in librsvg,
@@ -48,13 +48,13 @@ async function darkVariant(input) {
     .png().toBuffer();
 }
 
-for (const [category, suffix] of [['Embroideries', ''], ['ScrapingBy', '-scrapingby'], ['Artworks', '-artworks']]) {
+for (const [category, id] of [['Embroideries', 'embroideries'], ['ScrapingBy', 'scrapingby'], ['Artworks', 'artworks']]) {
   // The original embroidery logo remains byte-for-byte faithful to the input.
   const light = category === 'Embroideries' ? original : await sharp(Buffer.from(
     template.replace('{{SOURCE_IMAGE}}', sourceImage).replace('{{CATEGORY_LETTERS}}', await curvedLetters(category))
   )).png().toBuffer();
-  await sharp(light).toFile(join(ASSETS, `logo-seal${suffix}-light.png`));
-  await sharp(await darkVariant(light)).toFile(join(ASSETS, `logo-seal${suffix}-dark.png`));
+  await sharp(light).toFile(join(ASSETS, `ei-${id}-source-light.png`));
+  await sharp(await darkVariant(light)).toFile(join(ASSETS, `ei-${id}-source-dark.png`));
   console.log(`generated ${category} light and dark source logos`);
 }
 console.log('Done. Now run: npm run gen:icons');

@@ -1,43 +1,38 @@
 ---
 import { withBase } from '../lib/urls';
-import Layout from "../layouts/Layout.astro";
-import { site, social } from "../config";
+import Layout from '../layouts/Layout.astro';
+import { site } from '../config';
 ---
 
 <Layout
-    title="Image licensing"
-    description="Licensing and usage terms for the photographs on this site — every photograph is by the site owner, all rights reserved."
+  title="Artwork & Image Use"
+  description={`Copyright and permissions for original artwork, designs, images, and writing by ${site.name}.`}
 >
-    <article class="page prose">
-        <h1 class="page__title">Image licensing</h1>
+  <article class="page prose">
+    <h1 class="page__title">Artwork &amp; Image Use</h1>
 
-        <p class="lede">
-            Every photograph on this site was made by me, {site.name}{site.nameZh && (
-                <> (<span class="name-zh">{site.nameZh}</span>)</>
-            )} — I shoot all of them myself. © {site.name}. All rights reserved.
-        </p>
+    <p class="lede">
+      Original artwork, designs, images, and writing on this website are
+      © {site.name}, unless otherwise credited. All rights reserved.
+    </p>
 
-        <p>
-            You're welcome to view the images here. They are not licensed for
-            reuse, redistribution, or modification, and they may not be used to
-            train machine-learning models.
-        </p>
+    <p>
+      You’re welcome to browse the work and share links to this website.
+      Except where permitted by law, please obtain written permission before
+      reproducing, adapting, printing, or using the artwork or images in
+      publications, products, or advertising.
+    </p>
 
-        <p>
-            <strong
-                >No commercial use is permitted without my prior written
-                permission.</strong
-            > To license a photograph, or to use one for any commercial purpose, please
-            contact me first — I'm glad to discuss it.
-        </p>
+    <p>
+      Purchasing an original artwork does not transfer copyright or reproduction
+      rights unless agreed in writing.
+    </p>
 
-        <p>
-            Get in touch with me, {site.name}, on
-            <a
-                href={social.instagram}
-                target="_blank"
-                rel="noopener noreferrer">Instagram</a
-            >, or through the <a href={withBase('/contact/')}>contact page</a>.
-        </p>
-    </article>
+    <p>Use of the artwork or images for AI training is not authorised.</p>
+
+    <p>
+      For permission or licensing enquiries, please get in touch through the
+      <a href={withBase('/contact/')}>Contact page</a>.
+    </p>
+  </article>
 </Layout>

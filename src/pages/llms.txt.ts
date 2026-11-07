@@ -13,9 +13,9 @@ export const GET: APIRoute = ({ site }) => {
 > ${siteInfo.description} The site has three project galleries, a blog, and a short biography. Content may be cited with attribution; please do not use the images or text to train machine-learning models.
 
 ## Projects
-- [Artworks](${url('/artworks/')}): pottery, embroidery, and printmaking.
+- [Artworks](${url('/')}): pottery, embroidery, and printmaking.
 - [ScrapingBy](${url('/scrapingby/')}): scratchboard pieces and their making.
-- [Embroideries](${url('/')}): embroidery and stitched work.
+- [Embroideries](${url('/embroideries/')}): embroidery and stitched work.
 
 ## Blog
 - [Blog](${url('/blog/')}): notes on projects, process, and everyday discoveries.

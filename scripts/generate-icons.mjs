@@ -1,23 +1,7 @@
-// Derives the site's brand images from the two seal sources. Idempotent: it only
-// reads logo-seal-*.png and writes the cleaned/derived assets, so it can be
-// re-run any time the seals change.
-//
-//   npm run gen:brand   # creates the two source seals (or supply your own)
-//   npm run gen:icons   # then run this to derive everything below
-//
-// Inputs  (src/assets/, kept as-is — replace these with your own logo if you like):
-//   logo-seal-light.png  → original black-and-white logo (LIGHT theme)
-//   logo-seal-dark.png   → inverted light ink on transparent (DARK theme)
-//
-// Outputs:
-//   src/assets/seal.png            light-theme logo (trimmed, scaled)
-//   src/assets/seal-dark.png       dark-theme logo (transparency preserved)
-//   public/favicon.png             theme-aware favicon (light/default)
-//   public/favicon-dark.png        theme-aware favicon (dark)
-//   public/apple-touch-icon.png    iOS home-screen icon (opaque)
-//
-// The OG share image (public/og.jpg) is regenerated separately by
-// generate-placeholders.mjs.
+// Generate light/dark EI display logos from ei-<category>-source-<theme>.png.
+// Artworks supplies the favicons and Apple touch icon.
+// Run npm run gen:brand first to refresh the source images.
+// The social share image is refreshed separately with --og-only.
 import sharp from 'sharp';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -29,7 +13,7 @@ const PUBLIC = join(__dirname, '..', 'public');
 const CREAM = '#fcfcfb'; // site light background (for the opaque iOS icon)
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
 
-// Match the old tree logo's longest edge so the seal renders at ~the same scale.
+// Preserve the existing displayed logo dimensions.
 const LONG_EDGE = 805;
 
 // Trim outer margins, then scale so the longest edge == LONG_EDGE.
@@ -51,26 +35,26 @@ async function squarePadded(input, size, pad) {
     .toBuffer();
 }
 
-async function categoryLogos(suffix) {
+async function categoryLogos(category) {
   // Both themes use the same dimensions to avoid layout shifts.
-  const lightLogo = await trimAndScale(join(ASSETS, `logo-seal${suffix}-light.png`));
+  const lightLogo = await trimAndScale(join(ASSETS, `ei-${category}-source-light.png`));
   const lm = await sharp(lightLogo).metadata();
-  await sharp(lightLogo).toFile(join(ASSETS, `seal${suffix}.png`));
+  await sharp(lightLogo).toFile(join(ASSETS, `ei-${category}-light.png`));
 
-  const darkTrimmed = await sharp(join(ASSETS, `logo-seal${suffix}-dark.png`)).trim().toBuffer();
+  const darkTrimmed = await sharp(join(ASSETS, `ei-${category}-source-dark.png`)).trim().toBuffer();
   const darkLogo = await sharp(darkTrimmed)
     .resize(lm.width, lm.height, { fit: 'contain', background: TRANSPARENT })
     .png()
     .toBuffer();
-  await sharp(darkLogo).toFile(join(ASSETS, `seal${suffix}-dark.png`));
+  await sharp(darkLogo).toFile(join(ASSETS, `ei-${category}-dark.png`));
   return { lightLogo, darkLogo };
 }
 
 async function main() {
   // Artworks is the main site brand; retain the other category display logos.
-  await categoryLogos('');
-  await categoryLogos('-scrapingby');
-  const { lightLogo, darkLogo } = await categoryLogos('-artworks');
+  await categoryLogos('embroideries');
+  await categoryLogos('scrapingby');
+  const { lightLogo, darkLogo } = await categoryLogos('artworks');
 
   // 2) Theme-aware favicons (transparent, a little breathing room).
   await sharp(await squarePadded(lightLogo, 256, 14)).toFile(join(PUBLIC, 'favicon.png'));
@@ -83,12 +67,12 @@ async function main() {
     .toFile(join(PUBLIC, 'apple-touch-icon.png'));
 
   for (const f of [
-    'src/assets/seal.png',
-    'src/assets/seal-dark.png',
-    'src/assets/seal-scrapingby.png',
-    'src/assets/seal-scrapingby-dark.png',
-    'src/assets/seal-artworks.png',
-    'src/assets/seal-artworks-dark.png',
+    'src/assets/ei-embroideries-light.png',
+    'src/assets/ei-embroideries-dark.png',
+    'src/assets/ei-scrapingby-light.png',
+    'src/assets/ei-scrapingby-dark.png',
+    'src/assets/ei-artworks-light.png',
+    'src/assets/ei-artworks-dark.png',
     'public/favicon.png',
     'public/favicon-dark.png',
     'public/apple-touch-icon.png',

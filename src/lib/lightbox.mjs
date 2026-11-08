@@ -1,3 +1,5 @@
+import { createCaptionController } from './lightbox-caption.mjs';
+
 // Shared gallery and artwork viewer; imported by Lightbox.astro.
 const lightbox = document.getElementById('lightbox');
 const tiles = Array.from(document.querySelectorAll('.photo-tile'));
@@ -14,6 +16,12 @@ if (lightbox && tiles.length) {
   const status = lightbox.querySelector('.lightbox__status');
   const urlField = lightbox.querySelector('.lightbox__url');
   const isOpen = () => lightbox.classList.contains('is-open');
+  const captionController = createCaptionController({
+    figure, image, caption,
+    text: lightbox.querySelector('.lightbox__caption-text'),
+    toggle: lightbox.querySelector('.lightbox__more'),
+    isOpen, view: window, doc: document,
+  });
   const focusableControls = () => Array.from(lightbox.querySelectorAll(
     'button, [href], input, select, textarea, [tabindex]'
   )).filter(control => control.tabIndex >= 0 && !control.matches(':disabled') &&
@@ -39,8 +47,7 @@ if (lightbox && tiles.length) {
     urlField.value = shareUrl;
     image.alt = tile.dataset.alt ?? '';
     const cap = tile.dataset.caption ?? '';
-    caption.textContent = cap;
-    caption.hidden = cap === '';
+    captionController.setCaption(cap);
     lightbox.classList.toggle('has-caption', Boolean(cap));
     figure.scrollTop = 0;
     // Navigation can hide the URL fallback or sharing controls while focused.
@@ -83,7 +90,10 @@ if (lightbox && tiles.length) {
     else hi.onload = apply;
   };
 
-  const reveal = () => image.classList.remove('is-loading');
+  const reveal = () => {
+    image.classList.remove('is-loading');
+    captionController.schedule();
+  };
   image.addEventListener('load', reveal);
   image.addEventListener('error', reveal);
 
@@ -97,11 +107,13 @@ if (lightbox && tiles.length) {
     lightbox.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     btnClose.focus();
+    captionController.schedule();
   };
 
   const close = () => {
     if (!isOpen()) return;
     copyVersion++;
+    captionController.close();
     lightbox.classList.remove('is-open');
     lightbox.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = savedOverflow;

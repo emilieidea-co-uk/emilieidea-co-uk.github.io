@@ -8,7 +8,10 @@
   <button class="lightbox__nav lightbox__prev" type="button" aria-label="Previous photo">&#8249;</button>
   <figure class="lightbox__figure" tabindex="0" aria-label="Artwork image and caption">
     <img class="lightbox__img" alt="" draggable="false" />
-    <figcaption class="lightbox__caption" hidden></figcaption>
+    <figcaption class="lightbox__caption" hidden>
+      <span class="lightbox__caption-text" id="lightbox-caption-text"></span>
+      <button class="lightbox__more" type="button" aria-expanded="false" aria-controls="lightbox-caption-text" hidden>More</button>
+    </figcaption>
   </figure>
   <div class="lightbox__sharing" hidden>
     <button class="lightbox__copy" type="button">Copy Link</button>

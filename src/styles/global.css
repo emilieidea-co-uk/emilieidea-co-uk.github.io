@@ -463,7 +463,6 @@ a {
 
 .lightbox__caption {
   flex-shrink: 0;
-  white-space: pre-wrap;
   overflow-wrap: anywhere;
   margin-top: 0.9rem;
   max-width: 60ch;
@@ -1476,3 +1475,25 @@ a {
   max-height: calc(100vh - 180px);
   margin-bottom: 90px;
 }
+
+/* Only overflowing captions collapse; their full text stays in the DOM. */
+.lightbox__caption-text { display: block; white-space: pre-wrap; line-height: 1.5; }
+.lightbox__caption-text.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lightbox__more {
+  display: block;
+  margin: 4px auto 0;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.lightbox__more[hidden] { display: none; }
+.lightbox__figure { overflow-anchor: none; }

@@ -48,7 +48,7 @@ if (lightbox && tiles.length) {
     image.alt = tile.dataset.alt ?? '';
     const cap = tile.dataset.caption ?? '';
     captionController.setCaption(cap);
-    lightbox.classList.toggle('has-caption', Boolean(cap));
+    lightbox.classList.toggle('has-caption', Boolean(cap.trim()));
     figure.scrollTop = 0;
     // Navigation can hide the URL fallback or sharing controls while focused.
     if (isOpen() && !focusableControls().includes(document.activeElement)) btnClose.focus();

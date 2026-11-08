@@ -231,7 +231,11 @@ test('late clipboard rejection cannot focus a closed or reopened lightbox', asyn
 
 test('only overflowing captions get More, and expanding scrolls the minimum distance to reveal the text', async () => {
   const { nodes, tiles, flush } = setup({ capacity: 400, imageHeight: 250, textHeight: 240 });
+  const embroideries = JSON.parse(await readFile(new URL('../src/data/embroideries.json', import.meta.url), 'utf8'));
+  const example = embroideries.find(entry => entry.id === 'instagram-CxgPlirsC4b-01');
+  tiles[0].dataset.caption = example.caption;
   await tiles[0].emit('click'); flush();
+  assert.equal(nodes['.lightbox__caption-text'].textContent, example.caption);
   const text = nodes['.lightbox__caption-text'], more = nodes['.lightbox__more'], figure = nodes['.lightbox__figure'];
   assert.equal(more.hidden, false);
   assert.equal(more.attributes['aria-expanded'], 'false');

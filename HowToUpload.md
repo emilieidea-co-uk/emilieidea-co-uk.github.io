@@ -1,243 +1,204 @@
-# Updating EmilieIdea
+# How to update the EmilieIdea website
 
-Use this guide to add project images and descriptions, write blog posts, and edit
-pages. All paths below are relative to the repository root.
+This guide is for the person adding artwork and writing, even if you have never
+edited a website before. You can use GitHub in your browser; you do not need to
+install software or type commands.
 
-## Import selected Instagram posts
+The website does not have a separate upload form. Its pictures and text are saved
+in a project on GitHub. You will upload pictures and copy a small text template
+for their descriptions. There is also a guide below for blog posts and page text.
 
-For Instagram photos and captions, follow the [import tool guide](import_tool/README.md).
-Load its extension in Chrome, start from a profile or post, review each selected
-photo, and download a ZIP. Then preview and import it from the repository root:
+## Before you start
 
-```bash
-npm run import:instagram -- ~/Downloads/instagram-export.zip --dry-run
-npm run import:instagram -- ~/Downloads/instagram-export.zip
-```
+1. Sign in to GitHub with an account that can edit this project.
+2. Open the [EmilieIdea project](https://github.com/emilieidea-co-uk/emilieidea-co-uk.github.io).
+3. Check that the branch selector above the files says **master**. This is the
+   version that publishes the website.
 
-New entries have permanent IDs and `publish: false`. Set reviewed entries to
-`publish: true` to see them locally and include them in the next deployment.
-Existing records and manually edited captions are preserved. See the guide's live
-acceptance check before relying on Instagram extraction.
+A path such as `src/assets/artworks/` means open the **src** folder, then
+**assets**, then **artworks**. You can click folder names in GitHub to get there.
 
-The manual image workflow below and optional CSV importer remain available.
+**Saving on GitHub:** the button **Commit changes…** means “save these changes.”
+Give the save a short name, such as “Add blue pot,” choose to save directly to
+**master**, and confirm. Upload screens may show the save controls below the files.
+If GitHub only offers **Propose changes**, ask the person managing the project to
+help finish the change before expecting it to appear online.
+
+Saves to master automatically start a website update. After each finished update,
+follow [Check your changes online](#check-your-changes-online) below.
 
 ## Add images and descriptions
 
-### 1. Choose a project and copy the image
+### 1. Choose where the image belongs
 
-| Gallery | Copy images here | Edit descriptions here | Page |
-| --- | --- | --- | --- |
-| Artworks | `src/assets/artworks/` | `src/data/artworks.json` | `/` |
-| ScrapingBy | `src/assets/scrapingby/` | `src/data/scrapingby.json` | `/scrapingby/` |
-| Embroideries | `src/assets/embroideries/` | `src/data/embroideries.json` | `/embroideries/` |
+| Project | Upload pictures into this folder | Descriptions are in this file |
+| --- | --- | --- |
+| Artworks | [src/assets/artworks/](src/assets/artworks/) | [artworks.json](src/data/artworks.json) |
+| ScrapingBy | [src/assets/scrapingby/](src/assets/scrapingby/) | [scrapingby.json](src/data/scrapingby.json) |
+| Embroideries | [src/assets/embroideries/](src/assets/embroideries/) | [embroideries.json](src/data/embroideries.json) |
 
-Copy selected images into the matching folder. Supported formats are JPG, JPEG,
-PNG, WebP, and AVIF. Use a unique, descriptive filename such as `blue-clay-pot.jpg`.
-Place gallery images directly in the collection folder, without subfolders.
+The files ending in `.json` are text lists that connect each picture to its
+caption. Each picture needs both an uploaded file and a description in the list.
 
-The `ei_original_1_em`, `ei_original_2_sc`, and `ei_original_3_ar` folders are local
-archives. They are excluded from Git; copy your chosen files into the project
-folders above to include them on the website.
+### 2. Upload the picture
 
-### 2. Add an entry to the description file
+1. Choose a JPG, JPEG, PNG, WebP, or AVIF picture on your computer. JPG is a simple
+   choice. For browser uploads, keep each file below 25 MB.
+2. Give it a clear filename that has never been used in that project, such as
+   `blue-clay-pot.jpg`. Lowercase letters, numbers, and hyphens are easiest.
+3. Open the project's picture folder from the table above.
+4. Click **Add file → Upload files**, choose the picture, and save the change.
+   Upload the picture directly into that folder, without an extra folder around it.
 
-Open the matching JSON file and add an object inside its existing `[...]` array.
-For example, after copying `blue-clay-pot.jpg` to `src/assets/artworks/`:
+The picture will not appear in the gallery yet. Next, add its description.
+
+### 3. Add its description
+
+Open the matching description file from the table, then click the **pencil**
+button to edit it. Keep the existing entries.
+
+Find the first line containing `[` and paste the following immediately below it.
+The comma after the final `}` separates this new entry from the existing entries
+that follow it:
 
 ```json
-{
-  "file": "blue-clay-pot.jpg",
-  "publish": true,
-  "caption": "A small blue clay pot, hand formed and glazed in my studio.",
-  "date": "2026-11-07T12:00:00Z",
-  "postUrl": ""
-}
+  {
+    "id": "image-blue-clay-pot-2026-11-07",
+    "postId": null,
+    "imageIndex": 1,
+    "file": "blue-clay-pot.jpg",
+    "publish": true,
+    "caption": "A small blue clay pot, hand formed and glazed in my studio.",
+    "date": "2026-11-07T12:00:00Z",
+    "postUrl": ""
+  },
 ```
 
-- `file`: the exact filename, including its extension and capitalisation.
-- `publish`: `true` shows the image; `false` hides it from galleries and blog
-  components that reuse project images. Use booleans, without quotation marks.
-- `caption`: the description. Galleries display three lines with an ellipsis
-  when needed; the lightbox shows the full caption.
-- `date`: the post date in UTC, using the format above (`Z` means UTC).
-- `postUrl`: the original Instagram post URL, or `""` if there is none.
+Change these parts for your picture:
 
-After adding an image, run:
+| Part | What to enter |
+| --- | --- |
+| `id` | A permanent label unique across all three projects. For a new manually added picture, use `image-`, its filename without `.jpg`, and the date; for example `image-green-bowl-2026-11-08`. Use letters, numbers, and hyphens, with no spaces. Never change this label after publishing. |
+| `file` | The uploaded filename, including `.jpg` or its other ending. Spelling and capital letters must match exactly. |
+| `caption` | Your description of the work. Keep the double quotation marks around it. |
+| `date` | Change `2026-11-07` to your date, written as year-month-day. You can keep `T12:00:00Z`, which means noon in UTC. |
+| `publish` | Keep `true` to show the picture. Use `false` to hide it. These words have no quotation marks. |
 
-```bash
-npm run assign:ids
-```
+For this manual-upload template, leave `postId`, `imageIndex`, and `postUrl` as
+shown. For entries that already exist, preserve their existing values and IDs.
+Instagram importing is explained separately in the [README](README.md#import-selected-instagram-posts).
 
-This saves a permanent `id`, Instagram `postId`, and carousel `imageIndex` for
-new entries. For an image without an Instagram URL, it saves a generated ID
-and `postId: null`. Keep these fields unchanged after they have been assigned,
-even when editing captions or renaming files. Include the updated JSON when
-committing your changes. Existing entries keep their IDs on repeated runs.
+Keep the brackets, braces, commas, and quotation marks in place. If this is the
+first picture in a completely empty list, remove the comma after its final `}`.
+Within a caption, single quotation marks are easiest; a double quotation mark
+must be written as `\"`. Write `\n` if you want a line break in the caption.
 
-Separate objects with commas, but do not put a comma after the last object.
-JSON strings use double quotes. Write `\"` for a quotation mark inside a caption
-and `\n` for a line break.
+Save the change, then check the website update. The picture appears first in its
+gallery because you added it at the top of the list. Gallery descriptions show
+up to three lines; clicking the picture opens its full description.
 
-Copying an image alone does not make it appear: it must also be listed in the
-JSON file. The array order controls gallery order, so move an entry to the top
-to show it first. Changing the date alone does not reorder the gallery.
+### 4. Change a caption or hide a picture later
 
-### 3. Update or hide an existing image
+Open the description file and use your browser's Find command (**Command+F** on
+Mac, **Ctrl+F** on Windows) to find the picture's filename.
 
-Find its `file` entry and edit the caption, or set `publish` to `false`. There is
-no need to delete the image to hide it. Each published image has a page at
-`/artwork/<id>/`; use **Copy Link** in its lightbox to share it. Hiding an image
-also removes that page from the next build and from the sitemap. If you rename
-a file, update its JSON entry and any blog references to the same filename.
+- To change the description, edit only the text beside `caption`.
+- To hide the picture, change `"publish": true` to `"publish": false`.
+- To show it again, change `false` back to `true`.
+- To change gallery order, move its entire entry, including all its fields, to
+  the desired place. Changing the date does not change the order.
 
-Hiding an image does not remove it from the public repository or its history.
-For permanent removal, check blog references before removing its entry and file.
+Leave its `id` unchanged. That label keeps its shared artwork link working. Use
+**Copy Link** after opening the picture on the website to share it.
 
-### Optional: refresh descriptions from a CSV export
-
-Manual editing above is enough for ordinary updates. The importer is useful when
-you already have an Instagram CSV export and its downloaded images locally.
-Python 3 is required. Run commands from the repository root.
-
-For example, to refresh the existing Artworks selection:
-
-```bash
-python3 scripts/import-embroideries.py --collection artworks \
-  --selection src/data/artworks.json
-```
-
-Despite its filename, the script supports all three collections. Replace
-`artworks` with `scrapingby` or `embroideries` and use its matching JSON file.
-It uses the default CSV in that collection's original archive; override it with
-`--csv path/to/export.csv`. The downloaded images must be beside that CSV, with
-their original exported filenames.
-
-The selection JSON chooses which filenames to import. Without `--selection`,
-the script reuses the existing collection's entries. For an existing gallery,
-`--limit 50` checks that the selection contains exactly 50 images; it does not
-choose 50 new images.
-
-The importer copies selected images, replaces captions, dates, and post URLs
-with CSV values, preserves existing `publish` settings and permanent IDs by
-filename, and sorts the selection newest first, then by carousel sequence. Save any manually edited
-captions before importing if you want to keep them. Original archives are not
-included in a fresh clone.
+Hiding an image also removes its individual page from the next website update.
+Files saved in this public GitHub project remain visible there, even when hidden
+from the gallery. Do not upload private pictures or information.
 
 ## Edit the blog
 
-### Create or edit a post
+### Change an existing post
 
-Posts are in [src/content/blog/](src/content/blog/). Edit an existing file or
-create a `.md` file for text, or `.mdx` for text with image components.
+1. Open [the blog folder](src/content/blog/) and choose the post.
+2. Click the pencil button.
+3. Edit the ordinary paragraphs. Keep the lines between the two `---` markers
+   at the top unless you are changing the post's title, date, or short description.
+4. Existing posts may have lines beginning with `import`, `<Photo`, or `<Gallery`.
+   Leave those blocks intact when editing the writing around them.
+5. Save and check the update online.
 
-For example, `a-new-piece.mdx` becomes `/blog/a-new-piece/`. Start with:
+### Write a new post
 
-```mdx
+1. In [the blog folder](src/content/blog/), click **Add file → Create new file**.
+2. Name it something like `making-a-blue-pot.md`. Use lowercase words separated
+   by hyphens and keep `.md` at the end.
+3. Copy this template into the file:
+
+```markdown
 ---
-title: 'A new piece'
-description: 'Notes on the materials and process.'
+title: 'Making a blue pot'
+description: 'Notes on the clay, glaze, and making process.'
 pubDate: 2026-11-07
-tags: ['artworks', 'process']
-draft: true
+draft: false
 ---
 
 Write your introduction here.
 
-## Materials and process
-
-Write about the work, its materials, and how it developed.
+Write another paragraph about your materials and how the piece developed.
 ```
 
-Keep the `---` lines: they separate the post settings from its content.
-`title`, `description`, and `pubDate` are required. Posts appear newest first by
-`pubDate`. A post with `draft: true` is visible locally during development but
-excluded from the production site. Set it to `false` when ready to publish.
+Replace the title, short description, date, and paragraphs. Keep the `---` lines,
+field names, and quotation marks around the title and description. If your title
+contains an apostrophe, write it twice inside those single quotes: `Emilie''s pot`.
 
-Use `**bold**`, `*italics*`, and `[link text](https://example.com)` in the body.
-To remove a post, delete its file and remove any links to it elsewhere.
+A blank line starts a new paragraph. Use `**some words**` to make those words bold,
+or `*some words*` for italics. GitHub's **Preview** tab can show the text formatting;
+it does not show the complete website layout.
 
-### Add images to a post
+Save when ready. This example publishes the post. To save it without displaying
+it on the website, change `draft: false` to `draft: true`. Change it back when
+ready to publish. Drafts are not visible on the live site.
 
-In an `.mdx` post, add these imports immediately after its frontmatter:
-
-```mdx
-import Photo from '../../components/Photo.astro';
-import Gallery from '../../components/Gallery.astro';
-```
-
-Reuse a project image with its exact filename and collection. This example
-assumes you added the example image above:
-
-```mdx
-<Photo
-  collection="artworks"
-  src="blue-clay-pot.jpg"
-  alt="A small blue glazed clay pot"
-/>
-```
-
-`Photo` displays one full-width image. Its caption defaults to the project's
-caption; add `caption="A different caption for this post"` to override it.
-
-For two columns, use the existing `Gallery` component. Replace these example
-filenames with two real published images from the chosen collection:
-
-```mdx
-<Gallery collection="artworks" photos={[
-  { src: "blue-clay-pot.jpg", alt: "A small blue glazed clay pot" },
-  { src: "carved-print.jpg", alt: "A botanical lino print" }
-]} />
-```
-
-The grid becomes one column on phones. Both components open images in the
-lightbox and respect `publish: false` in the project's JSON file. A referenced
-filename must still have an entry in that file.
-
-For an image used only in a blog post, copy it to `src/assets/blog/` and omit
-`collection`:
-
-```mdx
-<Photo src="studio-table.jpg" alt="Materials on my studio table" caption="Work in progress" />
-```
-
-See the [existing post](src/content/blog/a-line-through-thread-clay-and-print.mdx)
-for working examples using all three projects.
+Your example post will be at `/blog/making-a-blue-pot/`. New posts appear in date
+order, newest first. For a post with images, ask the person maintaining the site
+to help use the image examples in the [README](README.md#advanced-blog-images).
 
 ## Edit pages
 
-| What to change | File |
+| What you want to change | Open this file |
 | --- | --- |
-| About text | [src/pages/about.astro](src/pages/about.astro) |
-| Contact text and displayed handles | [src/pages/contact.astro](src/pages/contact.astro) |
-| Site name, navigation, social URLs | [src/config.ts](src/config.ts) |
-| Privacy policy | [src/pages/privacy.astro](src/pages/privacy.astro) |
-| Artwork & Image Use | [src/pages/license.astro](src/pages/license.astro) |
-| Artworks home page introduction | [src/pages/index.astro](src/pages/index.astro) |
-| ScrapingBy introduction | [src/pages/scrapingby.astro](src/pages/scrapingby.astro) |
-| Embroideries introduction | [src/pages/embroideries.astro](src/pages/embroideries.astro) |
+| About text | [about.astro](src/pages/about.astro) |
+| Contact text and displayed account names | [contact.astro](src/pages/contact.astro) |
+| Instagram or GitHub destination links | [config.ts](src/config.ts) |
+| Privacy text | [privacy.astro](src/pages/privacy.astro) |
+| Artwork & Image Use text | [license.astro](src/pages/license.astro) |
 
-These pages use Astro and HTML. Edit the text inside `<h1>`, `<p>`, and other
-elements, preserving their opening and closing tags. Update the page's
-`description` too when the subject changes. Page titles and share previews for individual artwork pages come from the
-image caption; the category and permanent ID are used when it is empty.
+Open the file, click the pencil, and find the words you recognise from the page.
+Text may sit between markers such as `<p>` and `</p>`. Change the words between
+those markers while leaving the markers in place. Keep anything inside `{...}`
+and the setup block between the first two `---` lines unchanged.
 
-Gallery images and captions belong
-in the JSON files, rather than the page files.
+For destination links in `config.ts`, find `instagram:` or `github:` and replace
+only the URL inside its quotation marks. For layout changes or anything you do
+not recognise, ask for help before changing it.
 
-## Preview and publish
+## Check your changes online
 
-1. Run `npm run dev` and open **http://localhost:4321/**. Check the affected
-   gallery or blog post, including its captions and lightbox. For phone testing,
-   use Astro's printed Network URL while connected to the same Wi-Fi.
-2. Run `npm run build` to check the production build. To view it, run
-   `npm run preview -- --port 4322` and open **http://localhost:4322/**.
-   Draft posts are excluded from this preview.
-3. Commit the selected images, JSON changes, posts, and pages, then push to
-   `master`. Local edits alone do not update GitHub Pages.
-4. Wait for **Deploy to GitHub Pages** in the repository's
-   [Actions tab](https://github.com/emilieidea-co-uk/emilieidea-co-uk.github.io/actions)
-   to finish, then check **https://emilieidea-co-uk.github.io/**.
+1. Open the project's [Actions tab](https://github.com/emilieidea-co-uk/emilieidea-co-uk.github.io/actions).
+2. Find the latest **Deploy to GitHub Pages** update. Wait for it to finish with
+   a green check mark; a save does not appear on the website immediately.
+3. Open **https://emilieidea-co-uk.github.io/** and refresh. Check the picture,
+   caption, or page you changed. Artworks is the home page; use the menu to visit
+   ScrapingBy, Embroideries, or Blog.
 
-The build creates responsive WebP images automatically. Do not commit `dist/`
-or the original archive folders. See [README.md](README.md) for initial setup
-and deployment settings.
+If you see a red cross, the update failed and the previous successful website
+normally stays online. Check the filename and punctuation in your edits. If you
+are unsure, ask for help and include the failed Actions link; there is no need
+to keep making changes to try to force an update.
+
+If there is a green check but your change is missing, check that you saved to
+**master**, the picture has `publish: true`, or the blog has `draft: false`.
+Refresh the browser again.
+
+For setup, local preview, automated imports, and developer tools, use
+[README.md](README.md).

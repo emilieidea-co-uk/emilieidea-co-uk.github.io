@@ -9,7 +9,7 @@ Artworks is the home page. Each gallery has light/dark branding and a lightbox.
 ## Run locally
 
 Use Node.js **22.12 or newer**; `.nvmrc` and GitHub Actions use Node 22.
-Python 3 is needed only for the optional CSV importer.
+Python 3 is needed for the optional CSV importer and some test suites.
 
 ```bash
 npm ci
@@ -39,23 +39,13 @@ check that build on your phone too. Production CSS targets Safari 15 so older
 iPhones retain the mobile menu and single-column gallery. Keep `cssTarget` in
 [astro.config.mjs](astro.config.mjs) when changing build settings.
 
-## How to upload images and related descriptions
+## Update website content
 
-See [HowToUpload.md](HowToUpload.md#add-images-and-descriptions) for the steps to
-copy images into a project, add captions, and control which images are published.
+For adding images and descriptions, editing blog posts, and changing page text,
+follow [HowToUpload.md](HowToUpload.md). It is written for the person maintaining
+the artwork and does not require a local development environment.
 
-| Gallery | Image folder | Description file |
-| --- | --- | --- |
-| Artworks (home page) | `src/assets/artworks/` | `src/data/artworks.json` |
-| ScrapingBy | `src/assets/scrapingby/` | `src/data/scrapingby.json` |
-| Embroideries | `src/assets/embroideries/` | `src/data/embroideries.json` |
-
-Each image needs an entry in its description file. Set `publish: false` to hide
-it. Run `npm run assign:ids` after adding entries to save their permanent IDs.
-Each published image has an individual `/artwork/<id>/` page; **Copy Link** in
-the lightbox shares that image. The guide also explains the optional CSV importer.
-
-## Import from Instagram
+## Import selected Instagram posts
 
 Use the [local Chrome extension and ZIP importer](import_tool/README.md) to choose
 posts from a profile, review photos and captions, and add new images as unpublished.
@@ -68,14 +58,35 @@ npm run import:instagram -- ~/Downloads/instagram-export.zip
 The importer preserves existing IDs and edits and skips duplicates. Real Instagram
 extraction still needs the live acceptance check described in the tool guide.
 
-## Edit the blog and pages
+## Optional CSV import
 
-Posts live in [src/content/blog/](src/content/blog/). About, Contact, Privacy, and
-Artwork & Image Use live in `src/pages/`. Site name, navigation, and social URLs
-are in [src/config.ts](src/config.ts).
+For an existing reviewed selection and a local Instagram CSV archive:
 
-See [the blog guide](HowToUpload.md#edit-the-blog) for a post template and image
-examples, and [the page guide](HowToUpload.md#edit-pages) for the files to edit.
+```bash
+python3 scripts/import-embroideries.py --collection artworks \
+  --selection src/data/artworks.json
+```
+
+Use `scrapingby` or `embroideries` with the matching selection file for other
+projects. `--csv path/to/export.csv` overrides the default archive CSV; downloaded
+images must sit beside it with their exported filenames. Archives are excluded
+from Git and must be supplied locally. `--limit` checks the selected count; it
+does not choose additional images. Without `--selection`, the script reuses the
+existing manifest.
+
+The CSV importer refreshes captions, dates, and source URLs, preserves existing
+IDs and publication settings by filename, and sorts newest first. It can replace
+manually edited captions; the ZIP importer above skips existing records entirely.
+
+## Advanced blog images
+
+For posts with images, use `.mdx`. The existing
+[post](src/content/blog/a-line-through-thread-clay-and-print.mdx) demonstrates
+`Photo` (one column) and `Gallery` (two columns, one on mobile). Import these
+components from `../../components/`, specify the project with `collection`, and
+use the exact filename in `src`. Project references reuse captions and respect
+publication settings. Blog-only images go in `src/assets/blog/` and omit
+`collection`. Routine text editing is covered only in the user guide.
 
 ## Refresh logos and sharing artwork
 

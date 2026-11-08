@@ -13,12 +13,22 @@ if (lightbox && tiles.length) {
   const copy = lightbox.querySelector('.lightbox__copy');
   const status = lightbox.querySelector('.lightbox__status');
   const urlField = lightbox.querySelector('.lightbox__url');
+  const isOpen = () => lightbox.classList.contains('is-open');
+  const focusableControls = () => Array.from(lightbox.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]'
+  )).filter(control => control.tabIndex >= 0 && !control.matches(':disabled') &&
+    !control.closest('[hidden]') && control.getClientRects().length > 0 &&
+    getComputedStyle(control).visibility !== 'hidden');
+  let opener;
+  let savedOverflow = '';
+  let copyVersion = 0;
   let shareUrl = '';
   let index = -1;
   let shown = -1; // which photo the <img> currently holds
   let seq = 0; // invalidates an in-flight upgrade when the photo changes
 
   const render = (i) => {
+    copyVersion++;
     index = (i + tiles.length) % tiles.length;
     const tile = tiles[index];
     shareUrl = tile.dataset.artworkUrl ? new URL(tile.dataset.artworkUrl, window.location.origin).href : '';
@@ -33,6 +43,8 @@ if (lightbox && tiles.length) {
     caption.hidden = cap === '';
     lightbox.classList.toggle('has-caption', Boolean(cap));
     figure.scrollTop = 0;
+    // Navigation can hide the URL fallback or sharing controls while focused.
+    if (isOpen() && !focusableControls().includes(document.activeElement)) btnClose.focus();
     if (shown === index) return; // already displaying this photo
     shown = index;
     const ticket = ++seq;
@@ -76,6 +88,10 @@ if (lightbox && tiles.length) {
   image.addEventListener('error', reveal);
 
   const open = (i) => {
+    if (!isOpen()) {
+      opener = tiles[i];
+      savedOverflow = document.body.style.overflow;
+    }
     render(i);
     lightbox.classList.add('is-open');
     lightbox.setAttribute('aria-hidden', 'false');
@@ -84,20 +100,24 @@ if (lightbox && tiles.length) {
   };
 
   const close = () => {
+    if (!isOpen()) return;
+    copyVersion++;
     lightbox.classList.remove('is-open');
     lightbox.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    if (index > -1) tiles[index].focus();
+    document.body.style.overflow = savedOverflow;
+    if (opener?.isConnected) opener.focus({ preventScroll: true });
   };
 
   copy.addEventListener('click', async () => {
     const target = shareUrl;
-    if (!target) return;
+    if (!target || !isOpen()) return;
+    const ticket = ++copyVersion;
+    const stillCurrent = () => isOpen() && ticket === copyVersion && target === shareUrl;
     try {
       await navigator.clipboard.writeText(target);
-      if (target === shareUrl) status.textContent = 'Link copied';
+      if (stillCurrent()) status.textContent = 'Link copied';
     } catch {
-      if (target !== shareUrl) return;
+      if (!stillCurrent()) return;
       status.textContent = 'Select and copy this link';
       urlField.hidden = false;
       urlField.focus();
@@ -105,7 +125,6 @@ if (lightbox && tiles.length) {
       urlField.setSelectionRange(0, urlField.value.length);
     }
   });
-  urlField.addEventListener('keydown', (event) => event.stopPropagation());
   tiles.forEach((tile, i) => tile.addEventListener('click', () => open(i)));
   btnClose.addEventListener('click', close);
   btnPrev.addEventListener('click', () => render(index - 1));
@@ -113,10 +132,26 @@ if (lightbox && tiles.length) {
   lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) close();
   });
+  document.addEventListener('focusin', (e) => {
+    if (isOpen() && !lightbox.contains(e.target)) btnClose.focus();
+  });
   document.addEventListener('keydown', (e) => {
-    if (!lightbox.classList.contains('is-open')) return;
-    if (e.key === 'Escape') close();
-    else if (e.key === 'ArrowLeft') render(index - 1);
-    else if (e.key === 'ArrowRight') render(index + 1);
+    if (!isOpen()) return;
+    if (e.key === 'Tab') {
+      const controls = focusableControls();
+      const current = controls.indexOf(document.activeElement);
+      const next = current < 0 ? (e.shiftKey ? controls.length - 1 : 0)
+        : (current + (e.shiftKey ? -1 : 1) + controls.length) % controls.length;
+      e.preventDefault();
+      (controls[next] ?? btnClose).focus();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      close();
+    } else if (e.target !== urlField && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        render(index + (e.key === 'ArrowLeft' ? -1 : 1));
+      }
+    }
   });
 }

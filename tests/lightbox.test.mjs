@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { createCaptionController } from '../src/lib/lightbox-caption.mjs';
+import { lightboxItems } from '../src/lib/lightbox-items.mjs';
+import { installImageSwipe } from '../src/lib/image-swipe.mjs';
 
 // Run the actual browser script. This adapter supplies DOM focus, visibility,
 // ancestry, and events; keyboard and copy behaviour come entirely from the script.
@@ -23,7 +25,8 @@ class Element {
   addEventListener(type, listener) { this.listeners[type] = listener; }
   async emit(type, data = {}) {
     const event = { target: this, defaultPrevented: false,
-      preventDefault() { this.defaultPrevented = true; }, ...data };
+      preventDefault() { this.defaultPrevented = true; },
+      stopPropagation() {}, stopImmediatePropagation() { this.stopped = true; }, ...data };
     await this.listeners[type]?.(event);
     return event;
   }
@@ -50,13 +53,13 @@ class Element {
   setSelectionRange(start, end) { this.selection = [start, end]; }
 }
 const script = await readFile(new URL('../src/lib/lightbox.mjs', import.meta.url), 'utf8');
-function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 24, reducedMotion = false } = {}) {
+function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 24, reducedMotion = false, groupSlides = null, selected = 0 } = {}) {
   const document = { listeners: {}, addEventListener(type, listener) { this.listeners[type] = listener; } };
   document.emit = Element.prototype.emit;
   document.body = new Element(document); document.body.style = { overflow };
   document.activeElement = document.body;
   const lightbox = new Element(document, { parent: document.body });
-  const nodes = Object.fromEntries(['img', 'caption', 'caption-text', 'more', 'figure', 'close', 'prev', 'next', 'sharing', 'copy', 'status', 'url'].map(name =>
+  const nodes = Object.fromEntries(['img', 'caption', 'caption-text', 'more', 'figure', 'close', 'prev', 'next', 'sharing', 'copy', 'status', 'url', 'position'].map(name =>
     [`.lightbox__${name}`, new Element(document, { parent: lightbox, tabIndex: ['figure', 'close', 'prev', 'next', 'copy', 'url', 'more'].includes(name) ? 0 : -1 })]));
   nodes['.lightbox__copy'].parentElement = nodes['.lightbox__sharing'];
   nodes['.lightbox__url'].parentElement = nodes['.lightbox__sharing'];
@@ -86,6 +89,10 @@ function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 
     tile.querySelector = () => new Element(document);
     return tile;
   });
+  if (groupSlides) {
+    tiles[0].dataset.photoGroup = JSON.stringify(groupSlides);
+    tiles[0].dataset.photoIndex = String(selected);
+  }
   document.getElementById = () => lightbox;
   document.querySelectorAll = () => tiles;
   let copied;
@@ -105,8 +112,8 @@ function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 
     while (frames.length && remaining--) frames.shift()();
     assert.ok(remaining >= 0, 'layout should settle');
   };
-  runInNewContext(script.replace(/^import .*lightbox-caption.*\n/m, ''), { document, navigator, window, URL,
-    createCaptionController, getComputedStyle: window.getComputedStyle });
+  runInNewContext(script.replace(/^import .+;\n/gm, ''), { document, navigator, window, URL,
+    createCaptionController, lightboxItems, installImageSwipe, getComputedStyle: window.getComputedStyle });
   return { lightbox, nodes, tiles, document, navigator, flush, events, observers, fontEvents, copied: () => copied,
     key: (key, options = {}) => document.emit('keydown', { key, target: document.activeElement, ...options }) };
 }
@@ -312,4 +319,34 @@ test('expansion resets on navigation and reopening, and stale expansion scrolls 
   await tiles[1].emit('click'); flush();
   assert.equal(nodes['.lightbox__more'].attributes['aria-expanded'], 'false');
   assert.equal(nodes['.lightbox__figure'].scrollTop, 0);
+});
+
+
+test('grouped images navigate in order, copy the selected image URL, and continue to the next post', async () => {
+  const groupSlides = [1, 2, 3, 4].map(index => ({
+    id: `photo-${index}`, href: `/artwork/photo-${index}/`, full: `/photo-${index}.webp`,
+    src: `/photo-${index}.webp`, srcset: '', alt: `Photo ${index}`, caption: `Group caption ${index}`,
+  }));
+  const { nodes, tiles, document, copied, key, flush } = setup({ groupSlides, selected: 2, capacity: 300, imageHeight: 200, textHeight: 600 });
+  await tiles[0].emit('click'); flush();
+  assert.equal(nodes['.lightbox__position'].textContent, '3 / 4');
+  assert.equal(nodes['.lightbox__position'].hidden, false);
+  assert.equal(nodes['.lightbox__caption-text'].textContent, 'Group caption 3');
+  await nodes['.lightbox__copy'].emit('click');
+  assert.equal(copied(), 'https://example.com/artwork/photo-3/');
+  await nodes['.lightbox__more'].emit('click'); flush();
+  await key('ArrowRight'); flush();
+  assert.equal(nodes['.lightbox__position'].textContent, '4 / 4');
+  assert.equal(nodes['.lightbox__more'].attributes['aria-expanded'], 'false');
+  assert.equal(nodes['.lightbox__figure'].scrollTop, 0);
+  await key('ArrowRight');
+  assert.equal(nodes['.lightbox__position'].hidden, true);
+  assert.equal(nodes['.lightbox__caption-text'].textContent, 'Caption 1');
+  await key('ArrowLeft');
+  assert.equal(nodes['.lightbox__position'].textContent, '4 / 4');
+  await nodes['.lightbox__img'].emit('pointerdown', { pointerType: 'touch', pointerId: 1, clientX: 40, clientY: 40 });
+  await nodes['.lightbox__img'].emit('pointerup', { pointerType: 'touch', pointerId: 1, clientX: 140, clientY: 45 });
+  assert.equal(nodes['.lightbox__position'].textContent, '3 / 4');
+  await key('Escape');
+  assert.equal(document.activeElement, tiles[0]);
 });

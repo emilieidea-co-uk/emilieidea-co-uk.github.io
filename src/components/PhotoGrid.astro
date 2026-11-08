@@ -1,34 +1,21 @@
 ---
 import { absoluteUrl } from '../lib/urls';
-import { renderPhoto, GRID_SIZES } from '../lib/photos';
+import { GRID_SIZES } from '../lib/photos';
 import Lightbox from './Lightbox.astro';
 import { site as siteInfo } from '../config';
-import { publishedArtworks, artworkPath } from '../lib/project-photos';
+import { publishedArtworkGroups, renderArtworkGroup } from '../lib/project-photos';
 
 interface Props {
   collection: 'embroideries' | 'scrapingby' | 'artworks';
   title?: string;
 }
 const { collection, title = collection.charAt(0).toUpperCase() + collection.slice(1) } = Astro.props;
-const entries = publishedArtworks().filter(entry => entry.collection === collection);
-
-// Fallback alt text from the filename ("01-snowy-harbor.jpg" -> "Snowy harbor")
-// for photos without a description yet, so alt / SEO text is never empty.
-function captionFor(path: string, index: number): string {
-  const base = path.split('/').pop()!.replace(/\.[^.]+$/, '');
-  const words = base.replace(/^[\s\d_-]+/, '').replace(/[-_]+/g, ' ').trim();
-  if (!words) return `Photograph ${index + 1}`;
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-const photos = await Promise.all(
-  entries.map(async (entry, i) => {
-    const photo = await renderPhoto(entry.image);
-    const caption = entry.caption;
-    const alt = caption.trim() ? caption.replace(/\s+/g, ' ').slice(0, 160) : captionFor(entry.file, i);
-    return { ...photo, caption, alt, date: entry.date, href: artworkPath(entry.id) };
-  })
-);
+const groups = publishedArtworkGroups().filter(group => group.collection === collection);
+const posts = await Promise.all(groups.map(async group => {
+  const slides = await renderArtworkGroup(group);
+  return { cover: slides[0], slides };
+}));
+const photos = posts.flatMap(post => post.slides);
 
 // Structured data: an ImageGallery of ImageObjects attributed to the artist.
 // Include captions and dates from the gallery manifest when available.
@@ -59,18 +46,19 @@ const jsonLd = {
 ---
 
 {
-  photos.length === 0 ? (
+  posts.length === 0 ? (
     <p class="empty">
       No images yet.
     </p>
   ) : (
     <section class="gallery-grid captioned-gallery" aria-label={`${title} images`}>
-      {photos.map((photo, i) => (
+      {posts.map(({ cover: photo, slides }, i) => (
         <figure class="gallery-item">
           <button
             class="photo-tile"
             type="button"
-            aria-label={`${photo.alt} — view larger`}
+            aria-label={`${photo.alt} — view larger${slides.length > 1 ? `, ${slides.length} images in this post` : ''}`}
+            data-photo-group={JSON.stringify(slides)}
             data-full={photo.full}
             data-artwork-url={photo.href}
             data-alt={photo.alt}
@@ -86,6 +74,7 @@ const jsonLd = {
               decoding="async"
               draggable={false}
             />
+            {slides.length > 1 && <span class="gallery-image-count" aria-hidden="true">▣ {slides.length}</span>}
           </button>
           {photo.caption && <figcaption class="gallery-caption">{photo.caption}</figcaption>}
         </figure>

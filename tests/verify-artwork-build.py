@@ -34,7 +34,18 @@ for collection, gallery in [('artworks', 'index.html'), ('scrapingby', 'scraping
     entries = json.loads((ROOT / f'src/data/{collection}.json').read_text())
     published = [entry for entry in entries if entry['publish']]
     listing = Page(DIST / gallery)
-    assert [tile['data-artwork-url'] for tile in listing.tiles] == [f'/artwork/{entry["id"]}/' for entry in published]
+    groups = {}
+    for entry in published:
+        key = ('post', entry['postId']) if entry['postId'] else ('image', entry['id'])
+        groups.setdefault(key, []).append(entry)
+    ordered = [sorted(group, key=lambda entry: entry['imageIndex']) for group in groups.values()]
+    assert [tile['data-artwork-url'] for tile in listing.tiles] == [f'/artwork/{group[0]["id"]}/' for group in ordered]
+    for tile, group in zip(listing.tiles, ordered):
+        slides = json.loads(tile['data-photo-group'])
+        assert [slide['id'] for slide in slides] == [entry['id'] for entry in group]
+        assert [slide['caption'] for slide in slides] == [entry['caption'] for entry in group]
+        for slide in slides:
+            assert (DIST / slide['src'].lstrip('/')).is_file()
     for entry in entries:
         path = f'/artwork/{entry["id"]}/'
         file = DIST / path.lstrip('/') / 'index.html'
@@ -59,10 +70,14 @@ for collection, gallery in [('artworks', 'index.html'), ('scrapingby', 'scraping
         assert SITE + path in sitemap
         assert page.tiles[0]['data-artwork-url'] == path
         assert (page.tiles[0].get('data-caption') or '') == entry['caption']
+        slides = json.loads(page.tiles[0]['data-photo-group'])
+        expected = next(group for group in ordered if any(row['id'] == entry['id'] for row in group))
+        assert [slide['id'] for slide in slides] == [row['id'] for row in expected]
+        assert slides[int(page.tiles[0]['data-photo-index'])]['id'] == entry['id']
         logos = [img for img in page.images if 'brand__mark' in img.get('class', '')]
         assert len(logos) == 2
         assert all(f'ei-{collection}-' in logo['src'] for logo in logos)
 
 blog = Page(DIST / 'blog/a-line-through-thread-clay-and-print/index.html')
 assert len(blog.tiles) == 4 and all(tile.get('data-artwork-url') for tile in blog.tiles)
-print(f'Production checks passed: {count} image pages, galleries, blog links, preview files, metadata, and sitemap.')
+print(f'Production checks passed: {count} image pages, grouped galleries and carousels, blog links, preview files, metadata, and sitemap.')

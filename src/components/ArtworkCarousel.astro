@@ -1,0 +1,30 @@
+---
+import { POST_SIZES } from '../lib/photos';
+import type { renderArtworkGroup } from '../lib/project-photos';
+interface Props {
+  slides: Awaited<ReturnType<typeof renderArtworkGroup>>;
+  initialId: string;
+}
+const { slides, initialId } = Astro.props;
+const index = Math.max(0, slides.findIndex(slide => slide.id === initialId));
+const selected = slides[index];
+---
+<div class="artwork-carousel" role="group" aria-label="Artwork images">
+  <figure class="post-figure">
+    <button class="photo-tile" type="button" aria-label={`${selected.alt} — view larger`}
+      data-photo-group={JSON.stringify(slides)} data-photo-index={index}
+      data-full={selected.full} data-artwork-url={selected.href} data-alt={selected.alt} data-caption={selected.caption}>
+      <img class="photo__img" src={selected.src} srcset={selected.srcset} sizes={POST_SIZES}
+        alt={selected.alt} loading="eager" decoding="async" draggable="false" />
+    </button>
+    <div class="artwork-carousel__controls" hidden={slides.length < 2}>
+      <button class="artwork-carousel__prev" type="button" aria-label="Previous image in this post">←</button>
+      <span class="artwork-carousel__position" role="status" aria-live="polite">{index + 1} / {slides.length}</span>
+      <button class="artwork-carousel__next" type="button" aria-label="Next image in this post">→</button>
+    </div>
+    <figcaption class="post-figure__caption" hidden={!selected.caption}>{selected.caption}</figcaption>
+  </figure>
+</div>
+<script>
+  import '../lib/artwork-carousel.mjs';
+</script>

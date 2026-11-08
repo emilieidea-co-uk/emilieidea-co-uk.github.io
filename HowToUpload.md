@@ -95,7 +95,10 @@ must be written as `\"`. Write `\n` if you want a line break in the caption.
 
 Save the change, then check the website update. The picture appears first in its
 gallery because you added it at the top of the list. Gallery descriptions show
-up to three lines; clicking the picture opens its full description.
+up to three lines. Clicking the picture opens the viewer; long descriptions have
+a **More** button. Images from the same Instagram post appear as one gallery
+tile with an image count. Use the arrows or swipe across the image to see the
+other pictures. Each picture still has its own link through **Copy Link**.
 
 ### 4. Change a caption or hide a picture later
 
@@ -106,7 +109,10 @@ Mac, **Ctrl+F** on Windows) to find the picture's filename.
 - To hide the picture, change `"publish": true` to `"publish": false`.
 - To show it again, change `false` back to `true`.
 - To change gallery order, move its entire entry, including all its fields, to
-  the desired place. Changing the date does not change the order.
+  the desired place. For a multi-image Instagram post, move all of its entries
+  together. Their `imageIndex` values keep the original picture order; the first
+  published picture in that order is the gallery cover. Changing the date does
+  not change gallery order.
 
 Leave its `id` unchanged. That label keeps its shared artwork link working. Use
 **Copy Link** after opening the picture on the website to share it.

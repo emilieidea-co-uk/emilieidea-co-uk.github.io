@@ -5,6 +5,8 @@ with Astro and published at **https://emilieidea-co-uk.github.io/**.
 
 Navigation: **Artworks · ScrapingBy · Embroideries · Blog · About · Contact**.
 Artworks is the home page. Each gallery has light/dark branding and a lightbox.
+Published images from the same Instagram post share one gallery tile and carousel;
+every image retains its own permanent URL and share preview.
 
 ## Run locally
 

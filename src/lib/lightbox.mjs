@@ -1,3 +1,5 @@
+import { lightboxItems } from './lightbox-items.mjs';
+import { installImageSwipe } from './image-swipe.mjs';
 import { createCaptionController } from './lightbox-caption.mjs';
 
 // Shared gallery and artwork viewer; imported by Lightbox.astro.
@@ -5,6 +7,8 @@ const lightbox = document.getElementById('lightbox');
 const tiles = Array.from(document.querySelectorAll('.photo-tile'));
 
 if (lightbox && tiles.length) {
+  const items = lightboxItems(tiles);
+  const position = lightbox.querySelector('.lightbox__position');
   const image = lightbox.querySelector('.lightbox__img');
   const caption = lightbox.querySelector('.lightbox__caption');
   const figure = lightbox.querySelector('.lightbox__figure');
@@ -37,16 +41,19 @@ if (lightbox && tiles.length) {
 
   const render = (i) => {
     copyVersion++;
-    index = (i + tiles.length) % tiles.length;
-    const tile = tiles[index];
-    shareUrl = tile.dataset.artworkUrl ? new URL(tile.dataset.artworkUrl, window.location.origin).href : '';
+    index = (i + items.length) % items.length;
+    const { tile, slide, position: photoPosition, count } = items[index];
+    position.hidden = count < 2;
+    position.textContent = `${photoPosition} / ${count}`;
+    const href = slide ? slide.href : tile.dataset.artworkUrl;
+    shareUrl = href ? new URL(href, window.location.origin).href : '';
     sharing.hidden = !shareUrl;
     lightbox.classList.toggle('has-share-link', Boolean(shareUrl));
     status.textContent = '';
     urlField.hidden = true;
     urlField.value = shareUrl;
-    image.alt = tile.dataset.alt ?? '';
-    const cap = tile.dataset.caption ?? '';
+    image.alt = (slide ? slide.alt : tile.dataset.alt) ?? '';
+    const cap = (slide ? slide.caption : tile.dataset.caption) ?? '';
     captionController.setCaption(cap);
     lightbox.classList.toggle('has-caption', Boolean(cap.trim()));
     figure.scrollTop = 0;
@@ -63,8 +70,10 @@ if (lightbox && tiles.length) {
     // preview's load event — otherwise opening photo B after photo A would
     // flash A first.
     const thumb = tile.querySelector('.photo__img');
-    const preview = thumb?.currentSrc || '';
-    const full = tile.dataset.full ?? '';
+    const displayed = Number(tile.dataset.photoIndex) || 0;
+    const preview = (!slide || displayed === photoPosition - 1 ? thumb?.currentSrc : '') ||
+      slide?.srcset?.split(',')[0].trim().split(/\s+/)[0] || slide?.src || '';
+    const full = (slide ? slide.full : tile.dataset.full) ?? '';
     image.classList.add('is-loading');
     image.removeAttribute('sizes');
     image.srcset = '';
@@ -74,7 +83,7 @@ if (lightbox && tiles.length) {
     // sizes the browser fetches only as many pixels as the screen needs
     // (data-full, the largest rendition, remains the fallback). Decoded
     // off-screen first so the swap never blanks the visible photo.
-    const srcset = thumb?.srcset ?? '';
+    const srcset = (slide ? slide.srcset : thumb?.srcset) ?? '';
     if (!srcset || preview === full) return;
     const hi = new Image();
     hi.sizes = '100vw';
@@ -99,7 +108,7 @@ if (lightbox && tiles.length) {
 
   const open = (i) => {
     if (!isOpen()) {
-      opener = tiles[i];
+      opener = items[i].tile;
       savedOverflow = document.body.style.overflow;
     }
     render(i);
@@ -137,7 +146,13 @@ if (lightbox && tiles.length) {
       urlField.setSelectionRange(0, urlField.value.length);
     }
   });
-  tiles.forEach((tile, i) => tile.addEventListener('click', () => open(i)));
+  tiles.forEach(tile => tile.addEventListener('click', () => {
+    const first = items.findIndex(item => item.tile === tile);
+    const count = items[first].count;
+    const selected = Math.max(0, Math.min(Number(tile.dataset.photoIndex) || 0, count - 1));
+    open(first + selected);
+  }));
+  installImageSwipe(image, delta => render(index + delta), isOpen);
   btnClose.addEventListener('click', close);
   btnPrev.addEventListener('click', () => render(index - 1));
   btnNext.addEventListener('click', () => render(index + 1));

@@ -1,4 +1,6 @@
-# Instagram short-video support
+# EmilieIdea v1.1 — Instagram short-video support
+
+**Target release: v1.1**
 
 **Status: Proposed — not implemented.**
 

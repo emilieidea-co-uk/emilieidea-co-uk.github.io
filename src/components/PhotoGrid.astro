@@ -3,7 +3,7 @@ import { absoluteUrl } from '../lib/urls';
 import { GRID_SIZES } from '../lib/photos';
 import Lightbox from './Lightbox.astro';
 import { site as siteInfo } from '../config';
-import { publishedArtworkGroups, renderArtworkGroup } from '../lib/project-photos';
+import { publishedArtworkGroups, renderArtworkGroup, collectionInfo } from '../lib/project-photos';
 
 interface Props {
   collection: 'embroideries' | 'scrapingby' | 'artworks';
@@ -83,11 +83,16 @@ const jsonLd = {
   )
 }
 
+<p class="gallery-instagram">
+  <a class="text-link" href={collectionInfo[collection].instagram} target="_blank" rel="noopener noreferrer">View more on Instagram →</a>
+</p>
+
 <Lightbox />
 
 <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 
 <style>
+  .gallery-instagram { margin-block: 2rem; }
   .captioned-gallery .gallery-caption {
     display: -webkit-box;
     -webkit-box-orient: vertical;

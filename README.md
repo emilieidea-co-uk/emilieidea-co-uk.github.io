@@ -50,7 +50,10 @@ the artwork and does not require a local development environment.
 ## Import selected Instagram posts
 
 Use the [local Chrome extension and ZIP importer](import_tool/README.md) to choose
-posts from a profile, review photos and captions, and add new images as unpublished.
+posts from a profile, preview and capture their photos one by one, review the
+numbered thumbnails and shared caption, and add new images as unpublished.
+Automatic scanning is optional. The tool guide explains the Console diagnostics
+for checking Instagram layouts.
 
 ```bash
 npm run import:instagram -- ~/Downloads/instagram-export.zip --dry-run

@@ -25,9 +25,9 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 );
 
 export const collectionInfo = {
-  artworks: { title: 'Artworks', href: '/' },
-  scrapingby: { title: 'ScrapingBy', href: '/scrapingby/' },
-  embroideries: { title: 'Embroideries', href: '/embroideries/' },
+  artworks: { title: 'Artworks', href: '/', instagram: 'https://www.instagram.com/emilieidea_zugou/' },
+  scrapingby: { title: 'ScrapingBy', href: '/scrapingby/', instagram: 'https://www.instagram.com/eco_zhonglaise/' },
+  embroideries: { title: 'Embroideries', href: '/embroideries/', instagram: 'https://www.instagram.com/emilie_idea_embroideries/' },
 };
 export const artworkPath = (id: string) => withBase(`/artwork/${id}/`);
 validateArtworks(manifests, (collection: string, file: string) =>

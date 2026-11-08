@@ -1,13 +1,16 @@
 # Instagram import tool
 
-A local Chrome extension collects selected Instagram photos and reviewed captions.
-The local ZIP importer adds them to Artworks, ScrapingBy, or Embroideries with
-`publish: false`. Existing images, permanent IDs, captions, and publication settings
-are preserved. No publishing or Git push happens automatically.
+A local Chrome extension reads and previews the current Instagram photo without
+moving its carousel. Capture each photo into a numbered draft, review the complete
+post, then export a ZIP. Automatic collection remains an optional action.
 
-The tools and automated fixture tests are implemented. **A live Instagram test is still required**: Instagram's
-rendered interface can vary by account, language, and site changes. No private
-Instagram API or stored login token is used.
+The local importer adds new images with `publish: false`. Existing records, IDs,
+captions, and publication settings are preserved. No Git push or publishing occurs.
+The ZIP format and importer are unchanged by this update.
+
+**Live verification is still required.** Regression tests cover the first-image
+selection bug, but Instagram's real interface varies. Use the diagnostics below
+if reading photo 2 still returns photo 1.
 
 ## Install locally in Chrome
 
@@ -21,8 +24,12 @@ Use Chrome 116 or newer.
 5. Click its toolbar icon. The capture workspace opens in a normal tab and stays
    open while you move between Instagram posts. It needs no Chrome Web Store upload.
 
-After changing extension code, click **Reload** on its card at
-`chrome://extensions/`, then reload the capture workspace.
+After updating, click **Reload** on the extension's card at
+`chrome://extensions/`, then reload both the Instagram tab and tool workspace.
+The new extension version is **0.3.0**. The workspace Console should show
+`[EmilieIdea Import] workspace-start` with `workflow: manual-first`; reader reports
+show `readerVersion: 0.3.0-reader-1`. Older injected automatic scanners are refused
+with an explicit reload message, rather than silently reused.
 
 The extension requests `storage` for your local selection, `scripting` to read
 Instagram when you click, and `downloads` to save the ZIP. Host access is limited
@@ -42,59 +49,110 @@ Open a profile in Chrome; log in normally if Instagram requires it:
 | https://www.instagram.com/eco_zhonglaise/ | ScrapingBy |
 | https://www.instagram.com/emilieidea_zugou/ | Artworks |
 
-In the extension workspace, select the Instagram tab and click **Read Instagram
-tab**. The workspace lists photo-post links already loaded on that profile. Click
+In the extension workspace, select the Instagram tab and click **Read current photo / profile**. The workspace lists photo-post links already loaded on that
+profile. Click
 **Open post** beside one you want. Once it has loaded in Instagram, return to the
-workspace and click **Read Instagram tab** again to read that post.
+workspace and click **Read current photo / profile** again to preview its current photo.
 
 This is a selection tool, not an automatic weekly scan. It does not know which
 profile posts were already imported; the local importer skips existing images.
 Pinned posts may appear first. To see more links, scroll the profile yourself and
 read it again. You can also open an individual `/p/<shortcode>/` link directly.
 
-### 2. Review and capture each image
+### 2. Read and capture photos one by one
 
-Check the displayed photo, choose its project, and review:
+1. Open photo 1 of the post in Instagram. Keep the image visible in that tab.
+2. Return to the workspace and click **Read current photo / profile**. This does
+   not click arrows, change slides, or bring another tab to the front.
+3. Check the large preview. If several candidates are ambiguous, choose the
+   thumbnail matching the photo currently displayed in Instagram. No photo is
+   captured automatically.
+4. Check **Photo position in Instagram** and **Total photos in this post**. The
+   reader fills reliable detected values. Otherwise enter them yourself; an
+   unknown total is not assumed to be 1. A single-photo post uses position 1 and
+   total 1. Keep original slide positions even when reading out of order.
+5. Click **Capture this photo**. It appears in the numbered draft grid.
+6. Click Instagram's next arrow yourself, return here, and read again. Confirm
+   the preview changed before capturing position 2, then repeat for the rest.
 
-- **Photo position in post**: `1` for a single photo; the original Instagram slide
-  position for a carousel.
-- **Total photos in post**: `1` for a single photo, or the full carousel count.
-- **Full caption**: expand Instagram's caption first and compare it. Paste the
-  complete caption if the extractor could not find it or it is incomplete. Empty
-  captions are allowed when intentional. Instagram-generated image alt text is
-  not used as a substitute for the caption.
-- **Post date and time**: an ISO timestamp with a timezone, such as
-  `2026-11-07T12:00:00Z`. Enter it manually if it is unavailable on the page.
+The reader uses clipping, active-slide markers, and paint order to distinguish
+retained or overlapping images. It treats `currentSrc` as the displayed asset; a
+larger `srcset` image is used only when it matches that same asset. If the preview
+is wrong, do not capture it. Use diagnostics below rather than assigning the same
+photo another position.
 
-If several candidate photos are listed, use **Visible photo** to select the one
-that belongs at the current position. Tick the review confirmation, then click
-**Add this image to export**.
+Repeated image assets and repeated positions are rejected. Use **Remove photo N**
+to correct a draft capture, then read and capture that original position again.
+Removing a photo leaves a gap; it does not renumber the remaining photos. Reading
+the same post retains captured images and your caption/date/category edits.
+Switching posts asks before discarding a draft with captured images. Saved export
+queue entries are kept.
 
-For a carousel, switch back to Instagram, advance to the next photo, return to
-this workspace, and read the tab again. Repeat for every photo. The extension
-cannot see unloaded slides and does not automatically click through them.
+After all positions have been captured, review **Project**, **Full caption**, and
+**Post date and time**. Paste the full caption if extraction missed it; an empty
+caption is allowed when intentional. Dates use ISO format including a timezone,
+for example `2026-11-08T12:00:00Z`. Tick the complete-post review confirmation and
+click **Add post to export**. Missing positions prevent this action. Replacing an
+already queued post requires confirmation.
 
-The export requires all positions from `1` through the total you declared. It
-rejects repeated positions and identical captured media at different positions.
-It cannot independently prove the total or order: checking these against Instagram
-is part of the review. Do not label a single carousel slide as a single-photo post.
+The queue also shows numbered thumbnails. Existing complete selections remain
+exportable; incomplete older entries need their missing photos recaptured. If an
+old manually declared total was incorrect, collect and review that post again.
 
-Editing caption, category, date, or total while adding another slide updates the
-queued metadata for that whole post. To correct an already captured image or its
-position, click **Remove post** and capture that post again.
+#### Optional automatic collection
 
-Version 1 supports photo-only posts. Reels, videos, and mixed photo/video carousels
-are unsupported. If a video appears, skip the whole post. Supported downloads are
-JPEG, PNG, and WebP, up to 25 MB and 40 megapixels per photo. A ZIP may contain at
-most 200 photos and must be under 200 MB.
+**Automatic collection (optional)** is a separate action. It rewinds the open
+post and advances its carousel, with Cancel and Retry controls. It can replace an
+existing manual draft only after confirmation. The default Read action never
+starts an automatic scan. Keep using manual capture until your Instagram layout
+has been verified. Unsupported controls, missing boundaries, or failed transitions
+leave an incomplete result that cannot be added to the queue.
+
+Only complete photo-only posts are supported; reels and mixed photo/video posts
+are unsupported. A post may contain at most 100 photos. ZIP limits remain 200
+photos, 200 MB overall, and 25 MB / 40 megapixels per JPEG, PNG, or WebP image.
+
+## Console diagnostics
+
+Logs are enabled by default at Info, Warning, and Error levels. Filter for
+`EmilieIdea Import` to find this tool's messages among Instagram's own output.
+
+**Tool workspace console:** while on the extension's workspace tab, right-click
+an empty area, choose **Inspect**, then select **Console**. On Mac you can also
+press **Command+Option+J**; on Windows use **Ctrl+Shift+J**. This console mirrors
+photo-read reports, selection reasons, actions, and caught errors.
+
+**Instagram console:** open DevTools on the actual Instagram tab and select
+**Console**. Reader and scanner messages appear there too. Ensure Info, Warnings,
+and Errors are enabled in the Console's level filter; clear any unrelated text
+filter. The workspace mirror is useful if Instagram's selected-context filter
+hides extension content-script messages.
+
+Click **Log current photo diagnostics** to inspect without capturing or advancing.
+Reports include tool/helper versions, source tab, post ID, detected position/count,
+candidate sizes, rectangles, clipping, active markers, paint votes, asset paths,
+and selection/rejection reasons. Errors include their stack traces. Reports omit
+credentials, cookies, and signed CDN query strings.
+
+Click **Copy diagnostics** to copy the most recent report. If clipboard permission
+is unavailable, a text box opens for selecting and copying it manually.
+
+To diagnose the first-image problem:
+
+1. Read or log diagnostics on photo 1 and save the report.
+2. Click Instagram's next arrow, wait for photo 2 to load, and read/log again.
+3. Check that the large preview and selected asset change. If not, copy the second
+   report and describe which photo Instagram shows. Also include the first report
+   if possible. The report makes it possible to inspect the actual DOM selection
+   without guessing or silently capturing photo 1 repeatedly.
 
 ### 3. Download the ZIP
 
 Click **Download ZIP** and save it as `instagram-export.zip`, for example in
-Downloads. Keep the workspace open until the download completes. Media are fetched
-only at this point, not when captured. Export soon because Instagram CDN URLs
-expire. If a download returns an error or login page, remove and recapture the
-post after reopening it; incomplete exports do not produce a ZIP.
+Downloads. Keep the workspace open until the download completes. Full media bytes
+for the ZIP are downloaded at this point; the scan itself loads carousel images
+and thumbnail previews in Chrome. Export soon because Instagram CDN URLs expire. If a download returns an error or login page, reopen and recapture the
+post, then confirm replacement; incomplete exports do not produce a ZIP.
 
 The selection remains in Chrome after export, so you can retry. Clear it after a
 successful local import when ready to start another batch. Downloaded ZIPs are
@@ -177,21 +235,24 @@ npm run test:artwork-build
 Python 3 is required by the test suite's independent ZIP compatibility checks.
 The importer itself requires Node.js and Sharp (installed by `npm ci`).
 
-Automated tests cover profile/post DOM fixtures, caption review data, photo host
-restrictions, carousel completion, ZIP export and interoperability, malformed
-archives, real image decoding, unchanged duplicate imports, preserved manual edits,
-no-op dry runs, collisions, and rollback after an injected write failure.
+Automated tests cover retained first-image nodes, overlapping slides, active
+markers, stale `srcset`, displayed `currentSrc`, ambiguous candidate selection,
+manual capture order, duplicate rejection, removal/recapture, missing positions,
+metadata retention, post switching, mirrored diagnostic errors, and clipboard
+fallback. Automatic scanning, ZIP validation, real decoding, unchanged repeat
+imports, dry runs, collisions, and rollback remain covered.
 
 Before relying on this for weekly updates, perform this manual acceptance check:
 
-1. Read one real profile and open one real single-photo post; confirm its preview,
-   caption, category, and date in the workspace.
-2. Capture one full photo carousel and compare every position and the total to
-   Instagram. Confirm an incomplete selection cannot export.
-3. Download a ZIP; dry-run, import, and repeat the import. The repeat should report
-   zero new photos, with unchanged JSON and media.
-4. Publish one new image locally and check its gallery, lightbox, caption, and
-   permanent page. Leave the others unpublished.
+1. Read a real profile, open one single-photo post, read its current photo,
+   confirm its preview and metadata, and capture position 1 with total 1.
+2. On a real multi-image post, read photo 1, click Instagram's Next manually,
+   and read photo 2. Verify that preview and asset change, then capture the
+   remaining positions. Capture errors should be visible in the workspace Console.
+3. Attempt a duplicate capture and a post with a missing position. Neither should
+   create a complete export entry. Correct a capture with Remove, then recapture.
+4. Export, dry-run, import, and repeat the import. The repeat should add zero
+   photos. Publish one image locally and check its gallery and permanent page.
 
 ## Export format and Chrome references
 

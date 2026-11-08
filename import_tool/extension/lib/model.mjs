@@ -77,3 +77,38 @@ export function addCapture(queue, post, image) {
   if (next.reduce((sum, item) => sum + item.images.length, 0) > 200) throw new Error('Export at most 200 photos at a time.');
   return next;
 }
+
+// Add a complete, reviewed post in one operation; never leak a partial draft.
+export function addPost(queue, post, { replace = false } = {}) {
+  validatePost(post);
+  const urls = new Set();
+  for (const image of post.images) {
+    if (!isMediaUrl(image.url)) throw new Error('This image is not hosted on a supported Instagram CDN.');
+    const key = new URL(image.url).pathname;
+    if (urls.has(key)) throw new Error('The post repeats the same photo at different positions. Rescan it.');
+    urls.add(key);
+  }
+  const existing = queue.findIndex(item => item.postId === post.postId);
+  if (existing >= 0 && !replace) throw new Error('This post is already in the export. Confirm replacement first.');
+  const result = { postId: post.postId, postUrl: post.postUrl, category: post.category,
+    caption: post.caption, date: post.date, imageCount: post.imageCount,
+    images: [...post.images].sort((a, b) => a.imageIndex - b.imageIndex).map(image => ({ imageIndex: image.imageIndex, url: image.url })) };
+  const next = [...queue];
+  if (existing >= 0) next[existing] = result; else next.push(result);
+  if (next.reduce((sum, item) => sum + item.images.length, 0) > 200) throw new Error('Export at most 200 photos at a time.');
+  return next;
+}
+
+export function captureManualPhoto(draft, photo, imageIndex, imageCount) {
+  if (!Number.isInteger(imageCount) || imageCount < 1 || imageCount > 100 || !Number.isInteger(imageIndex) || imageIndex < 1 || imageIndex > imageCount) throw new Error('Enter the photo position and total photos, from 1 to 100.');
+  if (!isMediaUrl(photo?.url)) throw new Error('Read and preview a valid photo first.');
+  if (draft.images.some(image => image.imageIndex === imageIndex)) throw new Error('This position is already captured. Remove it before recapturing.');
+  if (draft.images.some(image => new URL(image.url).pathname === new URL(photo.url).pathname)) throw new Error('This is the same photo already captured. Click Instagram’s next arrow, then Read current photo again.');
+  const images = [...draft.images, { imageIndex, url: photo.url }].sort((a, b) => a.imageIndex - b.imageIndex);
+  if (images.some(image => image.imageIndex > imageCount)) throw new Error('The total is smaller than an already captured position.');
+  return { ...draft, mode: 'manual', images, imageCount, expectedCount: imageCount,
+    complete: images.length === imageCount && images.every((image, index) => image.imageIndex === index + 1) };
+}
+export function removeManualPhoto(draft, imageIndex) {
+  return { ...draft, mode: 'manual', complete: false, images: draft.images.filter(image => image.imageIndex !== imageIndex) };
+}

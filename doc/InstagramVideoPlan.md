@@ -1,193 +1,243 @@
-# EmilieIdea v1.1 — Instagram short-video support
+# EmilieIdea v1.1 — Instagram videos with YouTube/Vimeo playback
 
-**Target release: v1.1**
+youtube account required.
+
+## Target release: v1.1
 
 **Status: Proposed — not implemented.**
 
-This document describes future work. The current import tool and website remain
-photo-only. Nothing in this proposal enables video capture or publishing yet.
+This document describes future work only. The current import tool and website
+remain photo-only; this proposal does not enable video capture or playback.
 
 ## Goal
 
-Extend the [Chrome import tool](../import_tool/README.md) so a post can contain
-photos, short videos, or both. Review video in the extension, export it with the
-post, and eventually play it on the website without changing existing photo IDs
-or shared links.
+YouTube and Vimeo are both suitable for short videos, including artwork studies,
+creative processes, and animations lasting just 10–30 seconds.
 
-## Two ways to attach a video
+For EmilieIdea v1.1, **Instagram remains the source; YouTube or Vimeo becomes the
+playback host**. The extension helps acquire a clip and attach its hosted URL to
+an existing post. The website embeds the player instead of serving video files
+from GitHub Pages. Preserve existing photos, permanent IDs, and shared links.
 
-### Capture a downloadable Instagram MP4
+## Planned workflow
 
-1. Open the intended post and display its video slide in Instagram.
-2. Click **Read current media** in the extension.
-3. Detect the displayed video using the same visibility and selection diagnostics
-   used for photos. Read its available source, duration, dimensions, and poster.
-4. If a directly downloadable MP4 is available, show a video preview with native
-   playback controls. Download and verify the actual file before accepting it.
-5. Confirm its original position and the total media count for the post, then
-   capture it into the draft.
+```text
+Instagram clip or original/local MP4
+    → Save the MP4 on the computer
+    → Upload manually to YouTube or Vimeo
+    → Paste the hosted URL into the extension
+    → Attach it to the original post position and choose a cover
+    → Review and export the post
+    → Import as unpublished, then review and publish
+```
 
-Do not treat a video poster as the video itself. A `blob:` URL, adaptive stream,
-missing source, or expired download must produce a clear explanation and offer
-the local-file alternative. Do not reconstruct streams or use private Instagram
-APIs to obtain unavailable files.
+### 1. Acquire the video
 
-### Choose an MP4 from the computer
+Display the intended video slide in Instagram. The extension should identify the
+current media using the same visibility checks and diagnostic reporting as photo
+capture. It must not mistake a poster image for the video itself.
 
-1. Open or select the Instagram post being collected.
-2. Click **Choose local MP4** and select a file.
-3. Show a playable preview, filename, duration, dimensions, and size.
-4. Confirm the post position and total, then attach the file at that position.
+When Instagram exposes a directly downloadable MP4, offer **Download MP4** and
+verify the downloaded content. Save it through Chrome's normal download flow.
+The file is for uploading to the chosen video host, not for committing to GitHub.
 
-The local file belongs to the selected post; it must not create an unrelated post
-or change its source URL. Reading another slide must preserve attached files and
-reviewed metadata. Replacing or removing a captured item requires an explicit
-user action and must preserve the positions of remaining items.
+When no downloadable MP4 is available, explain the limitation and offer the
+original/local MP4 workflow. A `blob:` URL or adaptive stream does not guarantee
+that the extension can obtain a complete MP4. Do not reconstruct streams or use
+private Instagram APIs. A local file is a fallback the user supplies, not a claim
+that the extension can download every Instagram video.
 
-## Extension storage and review
+If local preview is offered, let the user select the MP4 and preview it with
+native controls. Keep that preview temporary: revoke object URLs when finished
+and ask the user to choose the file again after reopening the workspace. The
+original file stays on the computer; persistent video storage in the extension
+is deferred.
 
-- Keep the manual capture workflow as the default. A captured item records whether
-  it is an image or video, alongside its original post position.
-- Show image thumbnails and video posters together in a numbered grid. Mark video
-  items with a Play indicator and show their duration.
-- Preview videos with native controls and no autoplay. Stop playback when changing
-  previews or leaving the current draft.
-- Store attached file bytes in extension **IndexedDB**, linked to the post and
-  position. Do not store video bytes in ordinary settings storage or rely on an
-  object URL surviving a workspace reload.
-- Use temporary object URLs only for previews, revoke them when no longer needed,
-  and recreate them from IndexedDB when reopening the workspace.
-- Persist files before reporting capture success. Preserve the existing draft if
-  storage fails; explain the error through the status area and console diagnostics.
-- Remove file records when their draft or queued item is explicitly removed. Keep
-  queued files available after export so the user can retry a download.
-- Require a complete set of original positions and the existing whole-post review
-  confirmation before allowing export. Photos and videos share one ordered count.
+Investigate standalone video/Reels routes separately from carousel posts. Verify
+source selection, captions, dates, and canonical URLs live before claiming Reels
+capture support.
 
-## Export format and compatibility
+### 2. Upload manually to YouTube or Vimeo
 
-Introduce a versioned mixed-media ZIP format when implementation begins. Specify
-its exact schema and fixtures before changing the exporter or importer.
+The user uploads the saved or original clip through the provider's website.
+There is no automatic upload, account connection, or provider credential storage
+in v1.1.
 
-The new format must include media type, original position, file path, SHA-256
-checksum, and video metadata. Include poster information where available. File
-paths must remain deterministic and pass the existing archive safety checks.
+YouTube is the suggested starting option; Vimeo remains supported as an
+alternative. YouTube Unlisted videos can be viewed and reshared by anyone with
+the link, so unlisted does not mean private. Vimeo embedding and customisation
+options depend on the account plan and video settings. Neither provider should
+be described as guaranteeing an unbranded or ad-free experience on every plan.
 
-The updated importer must continue accepting existing version-1 photo ZIPs. Existing
-photo records, publication settings, categories, captions, dates, and permanent IDs
-must remain unchanged. Preserve the current post-ID/position identity convention;
-do not renumber media or generate new IDs merely because a post contains video.
+Embedding must be enabled and the video must be viewable by the intended audience.
+The user retains the source file independently of its hosted copy.
 
-Extend the current data model compatibly: old entries without a media type continue
-to mean images. Version-2 exports must never be silently interpreted as photo-only
-version-1 exports. Older importers should reject them with a clear unsupported-format
-message.
+### 3. Attach the hosted reference in the extension
 
-## Local validation and preparation
+Add a **Video URL** workflow alongside photo capture:
 
-Use **FFprobe** to inspect actual streams and **FFmpeg** to prepare website-ready
-video and generate a poster image. These are future importer requirements, not
-dependencies introduced by this documentation change.
+- Accept supported YouTube/Vimeo URLs and identify the provider and video ID.
+  Validate the URL rather than accepting arbitrary iframe HTML.
+- Preserve any provider-specific URL information required for an embeddable link;
+  do not accidentally discard a Vimeo unlisted video's access hash.
+- Associate the reference with the Instagram post ID and original media position.
+  Hosted URL changes must not create a new artwork identity.
+- Require a local cover image, chosen from an appropriate captured poster/photo
+  or an uploaded image. Do not depend on remote thumbnails for initial page load.
+- Show photos and video cover images together in a numbered draft grid. Mark video
+  items with a Play indicator. An optional provider preview loads only when clicked.
+- Retain the post's reviewed caption, date, category, and existing photo captures.
+  Require explicit actions to replace or remove an item, without renumbering others.
+- Keep complete-post review and duplicate checks before export. One mixed post
+  has one ordered media count, including both photos and video references.
 
-- Check that the file contains a valid video stream, not just an MP4 extension.
-- Verify duration, dimensions, size, and checksums before changing project data.
-- Prepare MP4 with H.264 video, a compatible pixel format, AAC audio when present,
-  and fast-start metadata for progressive playback. Preserve aspect ratio and
-  account for rotation metadata.
-- Generate a poster suitable for gallery covers and image-based social previews.
-- Handle silent clips without requiring an audio stream.
-- Stage prepared output before merging, preserve existing records, and retain
-  duplicate detection, dry runs, collision protection, and rollback behaviour.
-- Default newly imported videos to `publish: false`.
-- Keep FFmpeg preparation local so routine site deployment does not need to encode
-  video again. Do not add unrelated original video files to the published output.
+An Instagram source link and a hosted playback link serve different purposes:
+retain the original Instagram URL for attribution/source navigation, and use the
+YouTube/Vimeo URL for playback.
 
-**Proposed initial limits:** 60 seconds and 25 MB per clip. Confirm these before
-implementation and define whether they apply to both input and prepared output.
-Keep the existing overall ZIP size limit unless a separate change is approved.
-Do not silently trim an overlong clip.
+### 4. Export and import
+
+Define a versioned ZIP format and compatibility fixtures before implementing it.
+The new format carries video references and local cover images, **not video
+binaries**. Existing photo files continue to travel through the ZIP as before.
+
+Hosted-video metadata needs media type, provider, validated playback reference,
+original position, cover-image path/checksum, and the post's reviewed metadata.
+Specify the exact schema, filenames, and validation rules at implementation time.
+Keep local machine paths and temporary object URLs out of exported records.
+
+The importer must:
+
+- Continue accepting version-1 photo ZIPs unchanged.
+- Validate provider references, cover-image files, paths, and checksums before
+  changing project data.
+- Preserve existing IDs, captions, dates, categories, publication settings, and
+  media positions. Entries without a media type continue to mean images.
+- Keep the current post-ID/position identity convention for new video records.
+  Changing the host must not change the media's permanent page URL.
+- Default new records to `publish: false`, including video references.
+- Retain dry runs, duplicate detection, collision protection, and rollback.
+
+Older importers must reject unsupported format versions clearly rather than
+silently interpreting video references as photo files.
 
 ## Website playback
 
-Website support is a separate required stage before imported videos can be
-published:
+Extend the current grouped galleries, artwork pages, and lightbox for video-only
+posts and mixed photo/video carousels. Keep original media order and one gallery
+cover per post.
 
-- Extend grouped posts and artwork pages to render images and videos in the same
-  original order. Retain one gallery cover per post.
-- Use a poster and Play indicator for video covers. Keep image-based social
-  previews for shared video links.
-- Use native video controls, `playsinline`, and metadata-only preloading. Do not
-  autoplay or start audio automatically.
-- Pause video when changing a slide, changing posts, or closing the lightbox.
-  Ensure inactive players do not continue downloading or playing in the background.
-- Keep video controls usable: carousel keyboard and swipe handlers must not steal
-  seeking, volume, or playback interactions.
-- Preserve caption expansion, keyboard focus handling, Copy Link, themes, and
-  existing image routes. Video links must use their own stable media ID.
-- Decide published-file placement and serving before implementation. Hidden items
-  must not appear in galleries or generated artwork pages; document that files
-  committed to a public repository are not private.
+Use the local cover image with a Play button. Do not load the provider iframe,
+provider API scripts, or remote video thumbnail until the visitor interacts.
+Loading the player should not also force playback; leave autoplay disabled and
+let the visitor use the provider's controls.
+
+- Support responsive portrait and landscape layouts, fullscreen where available,
+  and inline playback on iPhone.
+- Use YouTube's privacy-enhanced embed domain. Treat it as a provider option, not
+  a guarantee that no data is exchanged once the player loads.
+- Remove the active iframe when changing slides/posts or closing the lightbox,
+  restoring its poster. This stops playback without needing provider APIs solely
+  for pause control.
+- Do not let carousel keyboard or swipe handling steal interactions with player
+  controls. Preserve focus containment, Escape handling outside the iframe, and
+  an accessible Close control; focus inside cross-origin players requires manual
+  browser verification.
+- Keep caption expansion, themes, Copy Link, and existing photo routes working.
+  Copy Link uses the selected media's EmilieIdea URL, not the provider URL.
+- Use the local cover for the media page's social preview. Existing image-specific
+  metadata and shared links remain valid.
+- Always provide **Watch on YouTube →** or **Watch on Vimeo →** as an alternative
+  when the video is private, removed, blocked, or cannot be embedded. Do not promise
+  detection of every cross-origin player error; keep the external link available.
+- Exclude unpublished records from galleries and generated artwork pages.
+- Update the site's privacy notice when hosted playback is implemented, describing
+  click-to-load embeds and linking the providers' privacy information.
+
+## Deferred work
+
+The following items are outside the v1.1 hosted-playback approach:
+
+- Hosting and playing raw MP4 files directly from GitHub Pages.
+- Persistent MP4/Blob storage in extension IndexedDB.
+- FFmpeg/FFprobe preparation and local encoding/poster generation pipelines.
+- Video binaries inside the website import ZIP or public repository.
+- Automatic uploads to YouTube/Vimeo, OAuth flows, or stored provider credentials.
+- Adaptive-stream reconstruction and private Instagram API integrations.
+
+The earlier proposed 60-second/25-MB limits are not requirements of hosted
+playback. Confirm practical limits for any optional MP4 acquisition/preview before
+implementing it. Existing image and ZIP limits remain unchanged unless explicitly
+revised. Never silently trim a clip.
 
 ## Development stages
 
-### Stage 1 — Capture and file attachment
+### Stage 1 — Acquisition and manual provider upload
 
-- [ ] Verify a real Instagram video exposing a direct MP4.
-- [ ] Investigate standalone video/Reels routes separately from existing photo-post
-      routes; confirm metadata, canonical URLs, and selection behaviour before
-      claiming Reels support.
-- [ ] Add read-only video detection and diagnostic reports.
-- [ ] Add local MP4 selection and IndexedDB persistence.
-- [ ] Add video previews and mixed-media draft review.
-- [ ] Confirm clip limits and how local files map to post positions.
+- [ ] Verify a real Instagram clip exposing a directly downloadable MP4.
+- [ ] Investigate standalone video/Reels selection and metadata separately.
+- [ ] Add read-only video detection, diagnostics, and Download MP4 when available.
+- [ ] Document the original/local MP4 fallback and optional temporary preview.
+- [ ] Confirm acquisition limits and clear unsupported-source errors.
+- [ ] Document manual YouTube/Vimeo upload and embedding visibility settings.
 
-### Stage 2 — ZIP and importer
+### Stage 2 — Hosted URL, cover, and import
 
-- [ ] Define the versioned format and backward-compatibility fixtures.
-- [ ] Export video bytes, metadata, checksums, and poster information.
-- [ ] Validate and prepare video with FFprobe/FFmpeg.
-- [ ] Extend project data without changing existing photo IDs or manual edits.
-- [ ] Verify dry runs, repeated imports, failure cleanup, and rollback.
+- [ ] Add validated YouTube/Vimeo URL attachment at an original post position.
+- [ ] Add local cover selection and mixed-media draft review.
+- [ ] Specify the versioned export/data schema and photo-compatibility fixtures.
+- [ ] Export references and covers without MP4 binaries.
+- [ ] Extend importer validation and unpublished-record creation.
+- [ ] Verify unchanged repeat imports, manual edits, IDs, dry runs, and rollback.
 
-### Stage 3 — Website playback and release
+### Stage 3 — Embedded playback and release
 
-- [ ] Add mixed-media rendering to galleries, artwork pages, and lightboxes.
-- [ ] Add poster-based previews and stable video sharing links.
-- [ ] Verify playback, pause-on-navigation, and native-control interaction.
-- [ ] Test on the iPhone 7 Plus and current desktop Chrome/Safari.
-- [ ] Update the import-tool guide and beginner publishing guide after the workflow
-      has been verified live.
+- [ ] Add poster-first, click-to-load video slides and provider viewing links.
+- [ ] Preserve ordering, captions, themes, sharing, and photo layouts.
+- [ ] Stop playback by removing inactive iframe players.
+- [ ] Test focus, controls, fullscreen, and iPhone inline behaviour.
+- [ ] Update the privacy notice and maintenance guides for the implemented workflow.
+- [ ] Complete live acceptance before claiming v1.1 video support.
 
 ## Acceptance tests
 
-Test direct MP4 capture, local MP4 attachment, a silent clip, and a post mixing
-photos and videos. Verify the correct slide is captured when earlier slides remain
-in Instagram's DOM.
+Test direct MP4 availability, an expired or inaccessible source, `blob:`/streaming
+sources, and the local-file fallback. Verify that selection follows the displayed
+slide rather than an earlier retained DOM node. Confirm there is no hidden private
+API request or automatic provider upload.
 
-Test missing or expired sources, `blob:` sources, adaptive streams, invalid files,
-oversized files, excessive duration, unavailable FFmpeg, and storage failures. Each
-failure must leave existing selections and project data intact.
+Test valid and invalid provider URLs, supported sharing URL variants, Vimeo access
+hash preservation, local cover selection, duplicate positions, gaps, replacement,
+and mixed-post ordering. Capturing a video reference must preserve reviewed text
+and existing photo records.
 
-Close and reopen the extension workspace: attached files and post positions must
-survive. Check that removing or replacing a file does not renumber other items or
-leave obsolete files indefinitely.
+Export/import a mixed post twice: the second import must add nothing. Confirm the
+ZIP contains references and cover/photo images but no MP4 files or local paths.
+Verify old photo ZIPs and every existing photo ID and shared URL still work.
 
-Export and import a mixed post twice. The second import must add nothing and
-preserve manual edits. Existing photo-only ZIPs, galleries, IDs, and shared URLs
-must still work.
+Check that initial pages load local posters without provider requests, and only
+clicking loads a player. Test playback controls, slide changes, lightbox close,
+external viewing links, disabled embedding, private/removed videos, and offline or
+blocked providers. Verify playback stops after navigating away.
 
-Check poster covers, video-only posts, mixed carousels, lightbox close/navigation,
-native controls, caption expansion, sharing, and iPhone inline playback. Inspect
-the generated static site to verify video and poster references resolve.
+Test the iPhone 7 Plus and current desktop Chrome/Safari, including portrait clips,
+keyboard focus, provider controls, fullscreen transitions, captions, and social
+previews. Inspect the generated static site for valid covers and media links.
 
-## Implementation boundaries
+## Boundaries and references
 
-This proposal does not authorise or perform implementation, installation,
-deployment, publishing, or changes to existing artwork data. It adds no backend,
-paid video service, automatic login, private API integration, or stream downloader.
-Live Instagram extraction and Reels feasibility must be verified rather than
-inferred from fixture tests alone.
+This proposal adds no implementation, dependencies, credentials, artwork records,
+or deployment. Keep all stages incomplete until implemented and verified. The
+current website remains v1.0 and photo-only.
 
-Existing project references: [developer README](../README.md),
+Project guides: [developer README](../README.md),
 [import-tool guide](../import_tool/README.md), and
 [beginner content guide](../HowToUpload.md).
+
+Provider references (reviewed 8 November 2026):
+
+- [Upload YouTube videos](https://support.google.com/youtube/answer/57407?hl=en)
+- [YouTube visibility settings](https://support.google.com/youtube/answer/157177?hl=en)
+- [YouTube embeds and privacy-enhanced mode](https://support.google.com/youtube/answer/171780?hl=en)
+- [Vimeo embedding features by plan](https://help.vimeo.com/hc/en-us/articles/12426275096337-Embedding-features-by-plan-type)
+- [Vimeo privacy settings and unlisted URLs](https://help.vimeo.com/hc/en-us/articles/12426199699985-About-video-privacy-settings)

@@ -1,5 +1,5 @@
 // Measure the actual lightbox space, rather than imposing a fixed caption length.
-export function createCaptionController({ figure, image, caption, text, toggle, isOpen, view, doc }) {
+export function createCaptionController({ figure, image, caption, text, toggle, extras, isOpen, view, doc }) {
   let expanded = false;
   let frame = null;
   let generation = 0;
@@ -19,13 +19,19 @@ export function createCaptionController({ figure, image, caption, text, toggle, 
     if (!isOpen()) return;
     clearClamp();
     image.style.maxHeight = '';
-    if (caption.hidden || !figure.clientHeight) { hideToggle(); return; }
+    const extraHeight = extras && !extras.hidden
+      ? extras.getBoundingClientRect().height + number(view.getComputedStyle(extras).marginTop) + number(view.getComputedStyle(extras).marginBottom)
+      : 0;
+    if (caption.hidden || !figure.clientHeight) {
+      if (figure.clientHeight && extraHeight) image.style.maxHeight = `${Math.max(1, figure.clientHeight - extraHeight)}px`;
+      hideToggle(); return;
+    }
     const captionStyle = view.getComputedStyle(caption);
     const textStyle = view.getComputedStyle(text);
     const margin = number(captionStyle.marginTop);
     const lineHeight = number(textStyle.lineHeight) || number(textStyle.fontSize) * 1.5 || 24;
     const fullHeight = text.getBoundingClientRect().height;
-    const capacity = figure.clientHeight;
+    const capacity = Math.max(1, figure.clientHeight - extraHeight);
     let imageHeight = image.getBoundingClientRect().height;
     if (imageHeight + margin + fullHeight <= capacity + 1) { hideToggle(); return; }
     // A short caption should stay whole even on a short landscape viewport.
@@ -82,6 +88,7 @@ export function createCaptionController({ figure, image, caption, text, toggle, 
     const observer = new view.ResizeObserver(schedule);
     observer.observe(figure);
     observer.observe(image);
+    if (extras) observer.observe(extras);
   }
   return {
     schedule,

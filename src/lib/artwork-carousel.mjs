@@ -1,10 +1,12 @@
 import { installImageSwipe } from './image-swipe.mjs';
+import { updateTagLinks } from './artwork-tags.mjs';
 export function initArtworkCarousel(root) {
   const tile = root.querySelector('.photo-tile');
   const slides = JSON.parse(tile.dataset.photoGroup);
   const image = tile.querySelector('.photo__img');
   const caption = root.querySelector('.post-figure__caption');
   const position = root.querySelector('.artwork-carousel__position');
+  const tags = root.querySelector('.artwork-tags');
   let index = Number(tile.dataset.photoIndex) || 0;
   const show = next => {
     index = (next + slides.length) % slides.length;
@@ -20,6 +22,7 @@ export function initArtworkCarousel(root) {
     image.alt = slide.alt;
     caption.textContent = slide.caption;
     caption.hidden = !slide.caption;
+    updateTagLinks(tags, slide.tags);
     position.textContent = `${index + 1} / ${slides.length}`;
   };
   root.querySelector('.artwork-carousel__prev').addEventListener('click', () => show(index - 1));

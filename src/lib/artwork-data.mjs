@@ -1,3 +1,5 @@
+import { validTag } from './artwork-tags.mjs';
+
 // Stored IDs are authoritative: never regenerate them from a renamed file.
 export function assignIdentity(entry) {
   if (!entry.postUrl) {
@@ -32,6 +34,10 @@ export function validateArtworks(manifests, hasImage) {
       files.add(entry.file);
       if (typeof entry.publish !== 'boolean' || typeof entry.caption !== 'string' ||
           typeof entry.date !== 'string' || !Number.isFinite(Date.parse(entry.date))) fail('invalid publication settings, caption, or date');
+      if (entry.tags !== undefined && (!Array.isArray(entry.tags) ||
+          entry.tags.some(tag => !validTag(tag)) || new Set(entry.tags).size !== entry.tags.length)) {
+        fail('tags must be unique lowercase words separated by hyphens, without collection names');
+      }
       if (!hasImage(collection, entry.file)) fail('missing image file');
       if (!entry.postUrl) continue;
       let source;

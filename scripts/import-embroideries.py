@@ -88,6 +88,7 @@ for item in chosen:
         'file': filename,
         'publish': publish_by_file.get(filename, item.get('publish', True)),
         'caption': row['caption'],
+        'tags': previous.get('tags', item.get('tags', [])),
         'date': datetime.fromtimestamp(int(row['timestamp']), timezone.utc).isoformat().replace('+00:00', 'Z'),
         'postUrl': row['url'],
     })

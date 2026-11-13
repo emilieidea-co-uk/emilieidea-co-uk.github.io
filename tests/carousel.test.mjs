@@ -10,6 +10,7 @@ class Element {
     (this.listeners[type] ??= []).push({ handler, capture });
   }
   setAttribute(name, value) { this.attributes[name] = value; }
+  replaceChildren(...children) { this.children = children; }
   emit(type, data = {}) {
     const event = { ...data, defaultPrevented: false, stopped: false,
       preventDefault() { this.defaultPrevented = true; },
@@ -52,13 +53,15 @@ test('swiping recognises horizontal touches and ignores vertical scrolling, canc
 
 test('inline carousel keeps selected-image metadata, captions, and counters in sync with arrows, keyboard, and swipe', () => {
   const root = new Element(), tile = new Element(), image = new Element(), caption = new Element(), position = new Element();
-  const prev = new Element(), next = new Element();
+  const prev = new Element(), next = new Element(), tags = new Element();
+  tags.ownerDocument = { createElement: () => ({}) };
   const slides = [1, 2, 3, 4].map(index => ({ id: `id-${index}`, href: `/artwork/id-${index}/`, full: `/full-${index}.webp`,
-    src: `/image-${index}.webp`, srcset: `/small-${index}.webp 640w`, caption: index === 4 ? '' : `Caption ${index}`, alt: `Image ${index}` }));
+    src: `/image-${index}.webp`, srcset: `/small-${index}.webp 640w`, caption: index === 4 ? '' : `Caption ${index}`, alt: `Image ${index}`,
+    tags: index === 4 ? [] : [{ href: '/tags/horse/', label: '#Horse' }] }));
   tile.dataset = { photoGroup: JSON.stringify(slides), photoIndex: '2' };
   tile.querySelector = () => image;
   const nodes = { '.photo-tile': tile, '.post-figure__caption': caption, '.artwork-carousel__position': position,
-    '.artwork-carousel__prev': prev, '.artwork-carousel__next': next };
+    '.artwork-carousel__prev': prev, '.artwork-carousel__next': next, '.artwork-tags': tags };
   root.querySelector = selector => nodes[selector];
   initArtworkCarousel(root);
   next.emit('click');
@@ -66,6 +69,7 @@ test('inline carousel keeps selected-image metadata, captions, and counters in s
   assert.equal(tile.dataset.artworkUrl, '/artwork/id-4/');
   assert.equal(position.textContent, '4 / 4');
   assert.equal(caption.hidden, true);
+  assert.equal(tags.hidden, true);
   assert.equal(image.alt, 'Image 4');
   next.emit('click'); assert.equal(tile.dataset.photoIndex, '0');
   prev.emit('click'); assert.equal(tile.dataset.photoIndex, '3');
@@ -74,6 +78,8 @@ test('inline carousel keeps selected-image metadata, captions, and counters in s
   assert.equal(tile.dataset.photoIndex, '2');
   assert.equal(caption.textContent, 'Caption 3');
   assert.equal(caption.hidden, false);
+  assert.equal(tags.hidden, false);
+  assert.deepEqual(tags.children, [{ href: '/tags/horse/', textContent: '#Horse' }]);
   root.emit('keydown', { key: 'ArrowLeft', altKey: true });
   assert.equal(tile.dataset.photoIndex, '2');
   let opened = 0;

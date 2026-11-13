@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, mkdtemp, copyFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { assignIdentity, validateArtworks, artworkTitle } from '../src/lib/artwork-data.mjs';
 const example = {
@@ -35,12 +37,29 @@ test('empty and long captions have usable titles', () => {
   assert.equal(artworkTitle({ caption: '\n  First line\nSecond line' }, 'Artworks'), 'First line');
   assert.equal(artworkTitle({ caption: 'A'.repeat(100) }, 'Artworks').length, 80);
 });
-test('migration preserves existing metadata and produces no changes on a repeated run', async () => {
+test('migration preserves existing metadata and produces no changes on a repeated run', async t => {
   const names = ['artworks', 'scrapingby', 'embroideries'];
   const before = await Promise.all(names.map(name => readFile(`src/data/${name}.json`, 'utf8')));
-  execFileSync(process.execPath, ['scripts/assign-artwork-ids.mjs']);
-  const after = await Promise.all(names.map(name => readFile(`src/data/${name}.json`, 'utf8')));
-  assert.deepEqual(after, before);
+  // Exercise the writing migration in isolation, preserving the editor's JSON formatting.
+  const root = await mkdtemp(join(tmpdir(), 'ei-ids-test-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  for (const directory of ['scripts', 'src/data', 'src/lib', ...names.map(name => `src/assets/${name}`)]) {
+    await mkdir(join(root, directory), { recursive: true });
+  }
+  for (const file of ['scripts/assign-artwork-ids.mjs', 'src/lib/artwork-data.mjs', 'src/lib/artwork-tags.mjs']) {
+    await copyFile(file, join(root, file));
+  }
+  for (const [i, name] of names.entries()) {
+    await writeFile(join(root, `src/data/${name}.json`), before[i]);
+    for (const entry of JSON.parse(before[i])) await writeFile(join(root, `src/assets/${name}/${entry.file}`), 'fixture');
+  }
+  const migrate = () => execFileSync(process.execPath, [join(root, 'scripts/assign-artwork-ids.mjs')]);
+  const read = () => Promise.all(names.map(name => readFile(join(root, `src/data/${name}.json`), 'utf8')));
+  migrate();
+  const after = await read();
+  assert.deepEqual(after.map(JSON.parse), before.map(JSON.parse));
+  migrate();
+  assert.deepEqual(await read(), after);
   const records = before.flatMap(text => JSON.parse(text));
   assert.ok(records.length > 0);
   assert.equal(new Set(records.map(entry => entry.id)).size, records.length);

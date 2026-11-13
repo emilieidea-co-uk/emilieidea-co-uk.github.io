@@ -1,6 +1,7 @@
 import { lightboxItems } from './lightbox-items.mjs';
 import { installImageSwipe } from './image-swipe.mjs';
 import { createCaptionController } from './lightbox-caption.mjs';
+import { updateTagLinks } from './artwork-tags.mjs';
 
 // Shared gallery and artwork viewer; imported by Lightbox.astro.
 const lightbox = document.getElementById('lightbox');
@@ -12,6 +13,7 @@ if (lightbox && tiles.length) {
   const image = lightbox.querySelector('.lightbox__img');
   const caption = lightbox.querySelector('.lightbox__caption');
   const figure = lightbox.querySelector('.lightbox__figure');
+  const tags = lightbox.querySelector('.artwork-tags');
   const btnClose = lightbox.querySelector('.lightbox__close');
   const btnPrev = lightbox.querySelector('.lightbox__prev');
   const btnNext = lightbox.querySelector('.lightbox__next');
@@ -21,7 +23,7 @@ if (lightbox && tiles.length) {
   const urlField = lightbox.querySelector('.lightbox__url');
   const isOpen = () => lightbox.classList.contains('is-open');
   const captionController = createCaptionController({
-    figure, image, caption,
+    figure, image, caption, extras: tags,
     text: lightbox.querySelector('.lightbox__caption-text'),
     toggle: lightbox.querySelector('.lightbox__more'),
     isOpen, view: window, doc: document,
@@ -54,6 +56,7 @@ if (lightbox && tiles.length) {
     urlField.value = shareUrl;
     image.alt = (slide ? slide.alt : tile.dataset.alt) ?? '';
     const cap = (slide ? slide.caption : tile.dataset.caption) ?? '';
+    updateTagLinks(tags, slide?.tags);
     captionController.setCaption(cap);
     lightbox.classList.toggle('has-caption', Boolean(cap.trim()));
     figure.scrollTop = 0;

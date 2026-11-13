@@ -63,6 +63,7 @@ test('single photos and full carousels import unpublished and repeat imports are
   const artworks = await manifest(root, 'artworks');
   assert.deepEqual(artworks.map(entry => entry.imageIndex), [1, 2]);
   assert.ok(artworks.every(entry => !entry.publish));
+  assert.ok(artworks.every(entry => Array.isArray(entry.tags) && entry.tags.length === 0));
   assert.equal(artworks[1].id, 'instagram-Carousel-02');
   const before = await snapshot(root);
   assert.equal((await importArchive(zip, { root })).skipped, 3);
@@ -72,7 +73,7 @@ test('single photos and full carousels import unpublished and repeat imports are
 test('dry-run writes nothing and existing manual edits, IDs, filenames, and category survive', async t => {
   const root = await project(t), post = makePost('OldPost', 'artworks');
   const original = { id: 'saved-permanent-id', postId: 'OldPost', imageIndex: 1, file: 'renamed.jpg',
-    caption: 'My edited caption', date: '2025-01-01T00:00:00Z', postUrl: post.postUrl, publish: true };
+    caption: 'My edited caption', date: '2025-01-01T00:00:00Z', postUrl: post.postUrl, publish: true, tags: ['horse', 'textile-art'] };
   await fs.writeFile(join(root, 'src/data/scrapingby.json'), JSON.stringify([original]) + '\n');
   await fs.writeFile(join(root, 'src/assets/scrapingby/renamed.jpg'), photo);
   const next = makePost('NewPost');

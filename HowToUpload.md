@@ -69,6 +69,7 @@ that follow it:
     "file": "blue-clay-pot.jpg",
     "publish": true,
     "caption": "A small blue clay pot, hand formed and glazed in my studio.",
+    "tags": ["pottery"],
     "date": "2026-11-07T12:00:00Z",
     "postUrl": ""
   },
@@ -81,6 +82,7 @@ Change these parts for your picture:
 | `id` | A permanent label unique across all three projects. For a new manually added picture, use `image-`, its filename without `.jpg`, and the date; for example `image-green-bowl-2026-11-08`. Use letters, numbers, and hyphens, with no spaces. Never change this label after publishing. |
 | `file` | The uploaded filename, including `.jpg` or its other ending. Spelling and capital letters must match exactly. |
 | `caption` | Your description of the work. Keep the double quotation marks around it. |
+| `tags` | A few words to help visitors find related pictures, such as `["horse", "textile-art"]`. Use lowercase letters and hyphens instead of spaces. Use `[]` for no tags. |
 | `date` | Change `2026-11-07` to your date, written as year-month-day. You can keep `T12:00:00Z`, which means noon in UTC. |
 | `publish` | Keep `true` to show the picture. Use `false` to hide it. These words have no quotation marks. |
 
@@ -106,6 +108,7 @@ Open the description file and use your browser's Find command (**Command+F** on
 Mac, **Ctrl+F** on Windows) to find the picture's filename.
 
 - To change the description, edit only the text beside `caption`.
+- To change tags, edit the words inside `tags`, for example `"tags": ["horse", "patchwork", "recycled-fabric"]`. Keep each tag in double quotation marks, separated by commas.
 - To hide the picture, change `"publish": true` to `"publish": false`.
 - To show it again, change `false` back to `true`.
 - To change gallery order, move its entire entry, including all its fields, to
@@ -120,6 +123,23 @@ Leave its `id` unchanged. That label keeps its shared artwork link working. Use
 Hiding an image also removes its individual page from the next website update.
 Files saved in this public GitHub project remain visible there, even when hidden
 from the gallery. Do not upload private pictures or information.
+
+### Choose tags
+
+Tags describe what is in **this picture**, such as `horse`, `flowers`, `pottery`,
+`linocut`, `scratchboard`, or `visible-mending`. Reuse words from the website's
+[tag list](https://emilieidea-co-uk.github.io/tags/) where possible. Only name a
+material or technique when you know it is correct. A picture can have no tags.
+
+Do not use the collection names Artworks, ScrapingBy or Embroideries as tags;
+`embroidery` is also reserved to avoid repeating the menu category.
+Pictures in the same Instagram post can have different tags.
+
+Visitors can click tags below a picture's description in the viewer or on its
+individual page. Each tag opens related posts from all three collections.
+These pages update automatically when your changes publish. Tags are separate
+from the caption; you do not need to add hashtags to your description. Instagram
+imports start with no tags, ready for you to review.
 
 ## Edit the blog
 

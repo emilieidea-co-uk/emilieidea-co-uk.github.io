@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import { createCaptionController } from '../src/lib/lightbox-caption.mjs';
 import { lightboxItems } from '../src/lib/lightbox-items.mjs';
 import { installImageSwipe } from '../src/lib/image-swipe.mjs';
+import { updateTagLinks } from '../src/lib/artwork-tags.mjs';
 
 // Run the actual browser script. This adapter supplies DOM focus, visibility,
 // ancestry, and events; keyboard and copy behaviour come entirely from the script.
@@ -31,6 +32,11 @@ class Element {
     return event;
   }
   setAttribute(key, value) { this.attributes[key] = value; }
+  replaceChildren(...children) {
+    for (const child of this.children ?? []) { child.parentElement = null; child.isConnected = false; }
+    this.children = children;
+    for (const child of children) child.parentElement = this;
+  }
   removeAttribute(key) { delete this.attributes[key]; }
   closest() {
     for (let node = this; node; node = node.parentElement) if (node.hidden) return node;
@@ -55,6 +61,7 @@ class Element {
 const script = await readFile(new URL('../src/lib/lightbox.mjs', import.meta.url), 'utf8');
 function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 24, reducedMotion = false, groupSlides = null, selected = 0 } = {}) {
   const document = { listeners: {}, addEventListener(type, listener) { this.listeners[type] = listener; } };
+  document.createElement = () => new Element(document, { tabIndex: 0 });
   document.emit = Element.prototype.emit;
   document.body = new Element(document); document.body.style = { overflow };
   document.activeElement = document.body;
@@ -66,6 +73,9 @@ function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 
   nodes['.lightbox__caption-text'].parentElement = nodes['.lightbox__caption'];
   nodes['.lightbox__more'].parentElement = nodes['.lightbox__caption'];
   const figure = nodes['.lightbox__figure'], text = nodes['.lightbox__caption-text'];
+  const tags = nodes['.artwork-tags'] = new Element(document, { parent: figure });
+  tags.hidden = true;
+  tags.rect = () => ({ height: tags.hidden ? 0 : 48 });
   figure.clientHeight = capacity;
   const renderedImageHeight = () => Math.min(imageHeight, Number.parseFloat(nodes['.lightbox__img'].style.maxHeight) || imageHeight);
   const renderedTextHeight = () => !text.textContent ? 0 : text.classList.contains('is-clamped') ? Math.min(textHeight, Number(text.style.webkitLineClamp) * 24) : textHeight;
@@ -82,7 +92,9 @@ function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 
   Object.defineProperty(figure, 'scrollHeight', { get: () => renderedImageHeight() + 14 + renderedTextHeight() + (buttonHeight() ? buttonHeight() + 4 : 0) });
   const order = ['close', 'prev', 'figure', 'more', 'copy', 'url', 'next'];
   lightbox.querySelector = selector => nodes[selector];
-  lightbox.querySelectorAll = () => order.map(name => nodes[`.lightbox__${name}`]);
+  lightbox.querySelectorAll = () => order.flatMap(name => [
+    ...(name === 'copy' ? tags.children ?? [] : []), nodes[`.lightbox__${name}`],
+  ]);
   const tiles = ['/artwork/first/', '/artwork/second/', undefined].map((url, index) => {
     const tile = new Element(document, { parent: document.body, tabIndex: 0 });
     tile.dataset = { artworkUrl: url, full: '/full.webp', caption: `Caption ${index}`, alt: `Art ${index}` };
@@ -113,7 +125,7 @@ function setup({ overflow = '', capacity = 500, imageHeight = 120, textHeight = 
     assert.ok(remaining >= 0, 'layout should settle');
   };
   runInNewContext(script.replace(/^import .+;\n/gm, ''), { document, navigator, window, URL,
-    createCaptionController, lightboxItems, installImageSwipe, getComputedStyle: window.getComputedStyle });
+    createCaptionController, lightboxItems, installImageSwipe, updateTagLinks, getComputedStyle: window.getComputedStyle });
   return { lightbox, nodes, tiles, document, navigator, flush, events, observers, fontEvents, copied: () => copied,
     key: (key, options = {}) => document.emit('keydown', { key, target: document.activeElement, ...options }) };
 }
@@ -349,4 +361,33 @@ test('grouped images navigate in order, copy the selected image URL, and continu
   assert.equal(nodes['.lightbox__position'].textContent, '3 / 4');
   await key('Escape');
   assert.equal(document.activeElement, tiles[0]);
+});
+
+test('selected-image tags stay keyboard reachable, reserve caption space, and clear on an untagged slide', async () => {
+  const groupSlides = [
+    { full: '/one.webp', src: '/one.webp', href: '/artwork/one/', alt: 'One', caption: 'Long caption',
+      tags: [{ href: '/tags/horse/', label: '#Horse' }] },
+    { full: '/two.webp', src: '/two.webp', href: '/artwork/two/', alt: 'Two', caption: '', tags: [] },
+    { full: '/three.webp', src: '/three.webp', href: '/artwork/three/', alt: 'Three', caption: '',
+      tags: [{ href: '/tags/pottery/', label: '#Pottery' }] },
+  ];
+  const { nodes, tiles, document, key, flush } = setup({ groupSlides, capacity: 300, imageHeight: 200, textHeight: 240 });
+  await tiles[0].emit('click'); flush();
+  const tags = nodes['.artwork-tags'];
+  assert.equal(tags.hidden, false);
+  assert.equal(tags.children[0].href, '/tags/horse/');
+  assert.equal(tags.children[0].textContent, '#Horse');
+  assert.equal(nodes['.lightbox__caption-text'].style.webkitLineClamp, '2');
+  assert.equal(nodes['.lightbox__img'].style.maxHeight, '154px');
+  nodes['.lightbox__more'].focus();
+  await key('Tab'); assert.equal(document.activeElement, tags.children[0]);
+  await key('ArrowRight'); flush();
+  assert.equal(tags.hidden, true);
+  assert.equal(tags.children.length, 0);
+  assert.equal(document.activeElement, nodes['.lightbox__close']);
+  nodes['.lightbox__figure'].clientHeight = 100;
+  await key('ArrowRight'); flush();
+  assert.equal(tags.children[0].textContent, '#Pottery');
+  assert.equal(nodes['.lightbox__caption'].hidden, true);
+  assert.equal(nodes['.lightbox__img'].style.maxHeight, '48px');
 });

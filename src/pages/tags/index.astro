@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { publishedArtworkGroups } from '../../lib/project-photos';
+import { artworkTagIndex } from '../../lib/artwork-tags.mjs';
+import { withBase } from '../../lib/urls';
+const tags = artworkTagIndex(publishedArtworkGroups());
+---
+<Layout title="Tags" description="Explore EmilieIdea’s work by subject, material and technique.">
+  <article class="page prose">
+    <h1>Tags</h1>
+    <p>Explore subjects, materials and techniques across the three collections.</p>
+    <ul class="tag-index">
+      {tags.map(({ tag, label, count }) => <li><a href={withBase(`/tags/${tag}/`)}>{label}</a> <span>({count} {count === 1 ? 'post' : 'posts'})</span></li>)}
+    </ul>
+    {!tags.length && <p>No tags yet.</p>}
+  </article>
+</Layout>
+<style>
+  .tag-index { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; }
+  .tag-index li { margin: 0; }
+</style>

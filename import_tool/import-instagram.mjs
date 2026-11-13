@@ -74,7 +74,7 @@ export async function importArchive(archive, { root = ROOT, dryRun = false, io =
         const target = join(root, 'src/assets', category, file);
         if (await exists(target, io)) throw new Error(`Refusing to overwrite an existing file: ${target}`);
         additions[category].push({ id, postId: post.postId, imageIndex: image.imageIndex, file,
-          publish: false, caption: post.caption, date: new Date(post.date).toISOString(), postUrl: post.postUrl });
+          publish: false, caption: post.caption, date: new Date(post.date).toISOString(), postUrl: post.postUrl, tags: [] });
         available.add(`${category}/${file}`);
         copies.push({ category, file, target, data: files.get(image.path) });
       }

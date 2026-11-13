@@ -1,5 +1,6 @@
 ---
 import { POST_SIZES } from '../lib/photos';
+import ArtworkTags from './ArtworkTags.astro';
 import type { renderArtworkGroup } from '../lib/project-photos';
 interface Props {
   slides: Awaited<ReturnType<typeof renderArtworkGroup>>;
@@ -23,6 +24,7 @@ const selected = slides[index];
       <button class="artwork-carousel__next" type="button" aria-label="Next image in this post">→</button>
     </div>
     <figcaption class="post-figure__caption" hidden={!selected.caption}>{selected.caption}</figcaption>
+    <ArtworkTags links={selected.tags} />
   </figure>
 </div>
 <script>

@@ -1521,3 +1521,18 @@ a {
 .artwork-carousel__controls { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 12px; }
 .artwork-carousel__controls button { background: none; border: 1px solid currentColor; border-radius: 4px; color: inherit; font: inherit; cursor: pointer; padding: 4px 14px; }
 .artwork-carousel .photo-tile, .lightbox__img { touch-action: pan-y pinch-zoom; }
+
+/* Image-specific tags wrap naturally on small screens and in both themes. */
+.artwork-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .85rem;
+  margin: .85rem 0 0;
+  max-width: 60ch;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+.artwork-tags[hidden] { display: none; }
+.artwork-tags a { color: inherit; overflow-wrap: anywhere; text-underline-offset: 3px; }
+.artwork-tags a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.lightbox .artwork-tags { color: #ececec; justify-content: center; font-size: 1rem; }

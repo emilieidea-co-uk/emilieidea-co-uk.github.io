@@ -22,7 +22,7 @@ class ImportIDs(unittest.TestCase):
             archive.mkdir()
             existing = {'file': 'renamed.jpg', 'id': 'permanent-existing-id',
                         'postId': 'PostOne', 'imageIndex': 2, 'publish': False,
-                        'caption': 'Old text', 'date': '2026-01-01T00:00:00Z',
+                        'caption': 'Old text', 'tags': ['horse', 'textile-art'], 'date': '2026-01-01T00:00:00Z',
                         'postUrl': 'https://www.instagram.com/p/PostOne/'}
             # The importer matches original exported filenames. Identity survives
             # changes to exported names as long as the stored file entry matches.
@@ -47,6 +47,8 @@ class ImportIDs(unittest.TestCase):
             self.assertEqual(entries['PostOne']['id'], existing['id'])
             self.assertEqual(entries['PostOne']['imageIndex'], 2)
             self.assertFalse(entries['PostOne']['publish'])
+            self.assertEqual(entries['PostOne']['tags'], existing['tags'])
+            self.assertEqual(entries['PostTwo']['tags'], [])
             self.assertEqual(entries['PostTwo']['id'], 'instagram-PostTwo-03')
             before = manifest.read_bytes()
             subprocess.run(command, check=True, capture_output=True)

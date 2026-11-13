@@ -3,17 +3,21 @@ import { absoluteUrl } from '../lib/urls';
 import { GRID_SIZES } from '../lib/photos';
 import Lightbox from './Lightbox.astro';
 import { site as siteInfo } from '../config';
-import { publishedArtworkGroups, renderArtworkGroup, collectionInfo } from '../lib/project-photos';
+import { publishedArtworkGroups, renderArtworkGroup, collectionInfo, type ArtworkGroup } from '../lib/project-photos';
+import { matchingImageIndex } from '../lib/artwork-tags.mjs';
 
 interface Props {
-  collection: 'embroideries' | 'scrapingby' | 'artworks';
+  collection?: 'embroideries' | 'scrapingby' | 'artworks';
   title?: string;
+  groups?: ArtworkGroup[];
+  tag?: string;
 }
-const { collection, title = collection.charAt(0).toUpperCase() + collection.slice(1) } = Astro.props;
-const groups = publishedArtworkGroups().filter(group => group.collection === collection);
+const { collection, title = collection ? collectionInfo[collection].title : 'Related artwork', tag } = Astro.props;
+const groups = Astro.props.groups ?? publishedArtworkGroups().filter(group => group.collection === collection);
 const posts = await Promise.all(groups.map(async group => {
   const slides = await renderArtworkGroup(group);
-  return { cover: slides[0], slides };
+  const index = tag ? Math.max(0, matchingImageIndex(group, tag)) : 0;
+  return { cover: slides[index], slides, index };
 }));
 const photos = posts.flatMap(post => post.slides);
 
@@ -52,13 +56,14 @@ const jsonLd = {
     </p>
   ) : (
     <section class="gallery-grid captioned-gallery" aria-label={`${title} images`}>
-      {posts.map(({ cover: photo, slides }, i) => (
+      {posts.map(({ cover: photo, slides, index }, i) => (
         <figure class="gallery-item">
           <button
             class="photo-tile"
             type="button"
             aria-label={`${photo.alt} — view larger${slides.length > 1 ? `, ${slides.length} images in this post` : ''}`}
             data-photo-group={JSON.stringify(slides)}
+            data-photo-index={index}
             data-full={photo.full}
             data-artwork-url={photo.href}
             data-alt={photo.alt}
@@ -83,9 +88,9 @@ const jsonLd = {
   )
 }
 
-<p class="gallery-instagram">
+{collection && <p class="gallery-instagram">
   <a class="text-link" href={collectionInfo[collection].instagram} target="_blank" rel="noopener noreferrer">View more on Instagram →</a>
-</p>
+</p>}
 
 <Lightbox />
 

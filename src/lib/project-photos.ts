@@ -3,6 +3,7 @@ import { validateArtworks } from './artwork-data.mjs';
 import { withBase } from './urls';
 import { groupArtworks } from './artwork-groups.mjs';
 import { renderPhoto, captionFromFilename } from './photos';
+import { tagLinks } from './artwork-tags.mjs';
 import embroideries from '../data/embroideries.json';
 import scrapingby from '../data/scrapingby.json';
 import artworks from '../data/artworks.json';
@@ -17,6 +18,7 @@ export interface ArtworkEntry {
   caption: string;
   date: string;
   postUrl: string;
+  tags?: string[];
 }
 export const manifests: Record<ProjectCollection, ArtworkEntry[]> = { embroideries, scrapingby, artworks };
 const images = import.meta.glob<{ default: ImageMetadata }>(
@@ -36,7 +38,7 @@ validateArtworks(manifests, (collection: string, file: string) =>
 export function publishedArtworks() {
   return (Object.keys(manifests) as ProjectCollection[]).flatMap(collection =>
     manifests[collection].filter(entry => entry.publish).map(entry => ({
-      ...entry, collection, image: images[`../assets/${collection}/${entry.file}`].default,
+      ...entry, tags: entry.tags ?? [], collection, image: images[`../assets/${collection}/${entry.file}`].default,
     })));
 }
 
@@ -53,6 +55,7 @@ export async function renderArtworkGroup(group: ArtworkGroup) {
   return Promise.all(group.images.map(async entry => ({
     ...await renderPhoto(entry.image), id: entry.id, href: artworkPath(entry.id),
     caption: entry.caption, date: entry.date,
+    tags: tagLinks(entry.tags, withBase),
     alt: entry.caption.trim().replace(/\s+/g, ' ').slice(0, 160) || captionFromFilename(entry.file),
   })));
 }

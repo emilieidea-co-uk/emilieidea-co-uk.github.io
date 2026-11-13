@@ -9,6 +9,16 @@ import { copyText } from './clipboard';
 export function initStitchPreview(): void {
   const canvas = document.querySelector<HTMLCanvasElement>('#preview-canvas');
   if (!canvas) return;
+  // VisualViewport also follows mobile browser bars and older Safari versions.
+  const fitViewport = () => {
+    const height = window.visualViewport?.height ?? window.innerHeight;
+    if (Number.isFinite(height) && height > 0) {
+      document.documentElement.style.setProperty('--preview-viewport-height', `${height}px`);
+    }
+  };
+  fitViewport();
+  window.addEventListener('resize', fitViewport);
+  window.visualViewport?.addEventListener('resize', fitViewport);
   const back = document.querySelector<HTMLAnchorElement>('#preview-back')!;
   const play = document.querySelector<HTMLButtonElement>('#preview-play')!;
   const restart = document.querySelector<HTMLButtonElement>('#preview-restart')!;

@@ -5,12 +5,7 @@ import { withBase } from '../../lib/urls';
 ---
 <Layout title="From drawing to hand stitches" description="Turn a drawing into running stitches and explore the spaces between them.">
   <article class="stitch-tutorial">
-    <header class="page prose">
-      <p><a href={withBase('/studio/')}>← Studio</a></p>
-      <h1>From drawing to hand stitches</h1>
-      <p class="lede">Choose a drawing → Stitch the outline → Add a pattern</p>
-      <p>A running stitch is a line made of small marks, with fabric showing between them. Choose a study drawing, then change the stitch length and the gap to explore its rhythm.</p>
-    </header>
+    <p><a href={withBase('/studio/')}>← Studio</a></p>
     <StitchStudy />
     <section class="page prose stitch-notes">
       <h2>What to try</h2>
@@ -29,6 +24,5 @@ import { withBase } from '../../lib/urls';
 </Layout>
 <style>
   .stitch-tutorial { width: 100%; min-width: 0; max-width: 1200px; margin-inline: auto; }
-  .stitch-tutorial > header { margin-inline: 0; }
   .stitch-notes { margin: 2rem 0 0; }
 </style>

@@ -125,5 +125,13 @@ const year = new Date().getFullYear();
 </html>
 
 <style>
-  .main.is-standalone { margin-left: 0; }
+  .main.is-standalone {
+    margin-left: 0;
+    min-height: 0;
+    height: 100vh;
+    height: 100dvh;
+    height: var(--preview-viewport-height, 100vh);
+    padding: clamp(.5rem, 2vh, 1.5rem) clamp(.75rem, 3vw, 2rem);
+    overflow: auto;
+  }
 </style>

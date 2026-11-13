@@ -14,7 +14,7 @@ const code = compile(await readFile(new URL('../src/studio/render-canvas.ts', im
   compile(await readFile(new URL('../src/studio/preview.ts', import.meta.url), 'utf8'));
 
 function setup(reduced = false) {
-  const events = {}, mediaEvents = {}, frames = new Map();
+  const events = {}, mediaEvents = {}, viewportEvents = {}, viewportStyles = {}, frames = new Map();
   let frameId = 0, moves = [], copied = '';
   const context = { setTransform() {}, fillRect() { moves = []; }, beginPath() {}, stroke() {},
     moveTo(x, y) { moves.push([x, y]); }, lineTo() {}, arc() {}, fill() {} };
@@ -26,6 +26,7 @@ function setup(reduced = false) {
     addEventListener(name, callback) { this.listeners[name] = callback; }, getContext: () => context,
   }]));
   const document = {
+    documentElement: { style: { setProperty(key, value) { viewportStyles[key] = value; } } },
     hidden: false, querySelector: selector => nodes[selector.replace('#preview-', '')],
     addEventListener(name, callback) { events[name] = callback; },
     body: { appendChild(field) { document.copyField = field; } },
@@ -38,8 +39,9 @@ function setup(reduced = false) {
   }));
   const query = 'drawing=horse&length=10&gap=6&lineWidth=3&fillLineWidth=0.5&pattern=rows&spacing=48&angle=90';
   const navigator = { clipboard: { writeText: async url => { copied = url; } } };
+  const viewport = { height: 780, addEventListener(name, callback) { viewportEvents[name] = callback; } };
   runInNewContext(code + '\ninitStitchPreview();', {
-    document, navigator, URL, window: { devicePixelRatio: 2, location: { search: query, origin: 'https://emilieidea-co-uk.github.io' }, matchMedia: () => media,
+    document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io' }, matchMedia: () => media,
       addEventListener(name, callback) { events[name] = callback; } },
     WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition,
     readSettings, settingsQuery, withBase: path => path, studies: [{ id: 'horse', title: 'Horse' }],
@@ -51,7 +53,7 @@ function setup(reduced = false) {
     const entry = frames.entries().next().value;
     if (entry) { frames.delete(entry[0]); entry[1](time); }
   };
-  return { nodes, document, events, media, mediaEvents, frames, tick, navigator, copied: () => copied, moves: () => moves };
+  return { nodes, document, events, media, mediaEvents, viewport, viewportEvents, viewportStyles, frames, tick, navigator, copied: () => copied, moves: () => moves };
 }
 
 test('preview animates slowly, outline before fill, pauses and returns complete settings to edit', () => {
@@ -97,6 +99,15 @@ test('reduced motion starts complete and paused; leaving the page cancels animat
   assert.equal(s.frames.size, 1);
   s.events.pagehide();
   assert.equal(s.frames.size, 0);
+});
+
+test('preview follows the visible browser height when toolbars or orientation change', () => {
+  const s = setup();
+  assert.equal(s.viewportStyles['--preview-viewport-height'], '780px');
+  s.viewport.height = 500; s.viewportEvents.resize();
+  assert.equal(s.viewportStyles['--preview-viewport-height'], '500px');
+  s.viewport.height = 420; s.events.resize();
+  assert.equal(s.viewportStyles['--preview-viewport-height'], '420px');
 });
 
 test('Share copies every setting with confirmation, including through a hidden clipboard fallback', async () => {

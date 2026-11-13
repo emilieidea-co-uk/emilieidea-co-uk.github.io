@@ -49,6 +49,10 @@ Prev returns to the outline while keeping settings. The Next button becomes
 7. With reduced motion enabled, the design starts complete and paused. You can
    explicitly press Play to watch it. Switching away from the page pauses it.
 8. Try keyboard controls, a phone, both themes and Safari 15.
+   The preview fits the visible browser height: its canvas shrinks to keep the
+   heading, controls, status and original-post link visible. Resize the window
+   or rotate the phone and check again. Oversized accessibility text can still
+   scroll rather than being clipped.
 9. Choose **Share** and check for **Link copied**. The copied URL should open the same drawing and every
    selected setting. It uses the current site's address: a local preview copies
    a local URL, and the published website copies a public URL. If copying is

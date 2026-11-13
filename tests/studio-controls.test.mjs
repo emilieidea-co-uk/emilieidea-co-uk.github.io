@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { readSettings, settingsQuery, defaultsForStudy, DEFAULT_SETTINGS } from '../src/studio/settings.ts';
+import { readSettings, settingsQuery, previewPath, defaultsForStudy, DEFAULT_SETTINGS } from '../src/studio/settings.ts';
 
 import { studies as catalogStudies, initialStudy as catalogInitialStudy } from '../src/studio/studies.ts';
 import { availableStages, lastStage, stageTitle } from '../src/studio/navigation.ts';
@@ -59,7 +59,7 @@ function setup(fixtures = studies) {
   const canvas = { setAttribute() {}, getContext: type => type === '2d' ? drawingContext : null };
   const context = {
     WIDTH: 600, HEIGHT: 440, FILL_COLOR: '#808080', OUTLINE_COLOR: '#33332e', console,
-    readSettings, settingsQuery, defaultsForStudy, DEFAULT_SETTINGS, availableStages, lastStage, stageTitle, initialStudy, URLSearchParams, withBase: path => path, initViewportHeight() {},
+    readSettings, settingsQuery, previewPath, defaultsForStudy, DEFAULT_SETTINGS, availableStages, lastStage, stageTitle, initialStudy, URLSearchParams, withBase: path => path, initViewportHeight() {},
     document: { createElement: () => canvas, querySelector: selector => nodes[selector.replace('#study-', '')], querySelectorAll: () => settings },
     window: { devicePixelRatio: 2, location: { search: '', assign: url => navigations.push(url) }, matchMedia: () => ({ matches: true }) },
     requestAnimationFrame: callback => { frames.push(callback); return frames.length; },
@@ -147,7 +147,7 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   nodes.next.listeners.click();
   assert.equal(navigations.length, 1);
   const destination = new URL(navigations[0], 'https://example.com');
-  assert.equal(destination.pathname, '/studio/drawing-to-stitches/preview/');
+  assert.equal(destination.pathname, '/studio/drawing-to-stitches/preview/horse/');
   assert.equal(destination.searchParams.get('drawing'), 'horse');
   assert.equal(destination.searchParams.get('fillLineWidth'), '2');
   assert.equal(destination.searchParams.get('lineWidth'), '3');

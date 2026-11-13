@@ -110,6 +110,18 @@ elements are supported; new pairs are discovered automatically. See
 Run `npm run check:studio` and `npm run test:studio` to check the Canvas controls,
 rendering and stitch geometry. No drawing library or submodule is required.
 
+Each drawing has a social sharing image generated automatically from its SVG,
+JSON defaults and outline/fill flags during the build. Sharing uses drawing-specific
+URLs such as `/studio/drawing-to-stitches/preview/flower/?length=6&gap=4…`.
+Images appear only in sharing metadata; selected settings still control playback.
+Old `/preview/?drawing=…` links forward visitors to the matching drawing page.
+Old links retain a generic social card because their HTML is static; use the new
+Share button to copy a link with the matching drawing's card.
+
+Run `npm run gen:studio-share` to inspect all cards locally in
+`.astro/studio/share/`. Those files are generated and should not be committed.
+The build publishes each image at `/studio/drawing-to-stitches/preview/<id>/share.png`.
+
 ## Refresh logos and sharing artwork
 
 The source logo is `src/assets/ei_logo.jpg`; category lettering is generated

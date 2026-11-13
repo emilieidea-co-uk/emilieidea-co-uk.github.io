@@ -2,7 +2,7 @@ import { studies, WIDTH, HEIGHT } from './studies';
 import { sampleStudy } from './sample-svg';
 import { generateStitches, playbackPosition } from './stitches';
 import { renderStitches } from './render-canvas';
-import { readSettings, settingsQuery } from './settings';
+import { readSettings, settingsQuery, previewPath } from './settings';
 import { withBase } from '../lib/urls';
 import { copyText } from './clipboard';
 import { stitchDistances, segmentPosition } from './playback';
@@ -20,10 +20,15 @@ export function initStitchPreview(): void {
   const shareStatus = document.querySelector<HTMLElement>('#preview-share-status')!;
   const status = document.querySelector<HTMLElement>('#preview-status')!;
   const description = document.querySelector<HTMLElement>('#preview-description')!;
-  const settings = readSettings(window.location.search);
+  const settings = readSettings(window.location.search, canvas.dataset?.drawing);
+  const previewUrl = `${withBase(previewPath(settings.drawing))}?${settingsQuery(settings)}`;
+  if (canvas.dataset?.legacy === 'true') {
+    window.location.replace(previewUrl);
+    return;
+  }
   const study = studies.find(study => study.id === settings.drawing)!;
   back.href = `${withBase('/studio/drawing-to-stitches/')}?${settingsQuery(settings)}&step=${lastStage(study)}`;
-  const shareUrl = new URL(`${withBase('/studio/drawing-to-stitches/preview/')}?${settingsQuery(settings)}`, window.location.origin).href;
+  const shareUrl = new URL(previewUrl, window.location.origin).href;
   description.textContent = `${study.name}${study.hasFill ? ` · ${settings.pattern} pattern` : ''}. ${study.hasOutline && study.hasFill ? 'Watch the outline first, then the grey fill.' : study.hasOutline ? 'Watch the outline build up.' : 'Watch the grey fill build up.'} The dot shows the current stitch.`;
   const generated = generateStitches(sampleStudy(study), {
     length: settings.length, gap: settings.gap, spacing: settings.spacing,

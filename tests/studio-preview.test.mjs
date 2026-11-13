@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { readSettings, settingsQuery } from '../src/studio/settings.ts';
+import { readSettings, settingsQuery, previewPath } from '../src/studio/settings.ts';
 import { FILL_COLOR, OUTLINE_COLOR, playbackPosition } from '../src/studio/stitches.ts';
 import { lastStage } from '../src/studio/navigation.ts';
 import { stitchDistances, segmentPosition } from '../src/studio/playback.ts';
@@ -16,7 +16,7 @@ const code = compile(await readFile(new URL('../src/studio/render-canvas.ts', im
   compile(await readFile(new URL('../src/studio/clipboard.ts', import.meta.url), 'utf8')) +
   compile(await readFile(new URL('../src/studio/preview.ts', import.meta.url), 'utf8'));
 
-function setup(reduced = false, longFill = false, flags = { hasOutline: true, hasFill: true }) {
+function setup(reduced = false, longFill = false, flags = { hasOutline: true, hasFill: true }, dataset = { drawing: 'horse' }) {
   const events = {}, mediaEvents = {}, viewportEvents = {}, viewportStyles = {}, frames = new Map();
   let frameId = 0, moves = [], copied = '';
   const context = { setTransform() {}, fillRect() { moves = []; }, beginPath() {}, stroke() {},
@@ -28,6 +28,8 @@ function setup(reduced = false, longFill = false, flags = { hasOutline: true, ha
     setAttribute(key, value) { this[key] = value; },
     addEventListener(name, callback) { this.listeners[name] = callback; }, getContext: () => context,
   }]));
+  nodes.canvas.dataset = dataset;
+  const replacements = [];
   const document = {
     documentElement: { style: { setProperty(key, value) { viewportStyles[key] = value; } } },
     hidden: false, querySelector: selector => nodes[selector.replace('#preview-', '')],
@@ -44,10 +46,10 @@ function setup(reduced = false, longFill = false, flags = { hasOutline: true, ha
   const navigator = { clipboard: { writeText: async url => { copied = url; } } };
   const viewport = { height: 780, addEventListener(name, callback) { viewportEvents[name] = callback; } };
   runInNewContext(code + '\ninitStitchPreview();', {
-    document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io' }, matchMedia: () => media,
+    document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io', replace: url => replacements.push(url) }, matchMedia: () => media,
       addEventListener(name, callback) { events[name] = callback; } },
     WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition, stitchDistances, segmentPosition,
-    readSettings, settingsQuery, lastStage, withBase: path => path, studies: [{ id: 'horse', name: 'Horse', ...flags }],
+    readSettings, settingsQuery, previewPath, lastStage, withBase: path => path, studies: [{ id: 'horse', name: 'Horse', ...flags }, { id: 'flower', name: 'Flower', ...flags }],
     sampleStudy: () => [], generateStitches: (_, options) => generated.filter(segment => segment.kind === 'fill' ? options.fill : options.outline),
     requestAnimationFrame(callback) { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame(id) { frames.delete(id); },
@@ -56,7 +58,7 @@ function setup(reduced = false, longFill = false, flags = { hasOutline: true, ha
     const entry = frames.entries().next().value;
     if (entry) { frames.delete(entry[0]); entry[1](time); }
   };
-  return { nodes, document, events, media, mediaEvents, viewport, viewportEvents, viewportStyles, frames, tick, navigator, copied: () => copied, moves: () => moves };
+  return { replacements, nodes, document, events, media, mediaEvents, viewport, viewportEvents, viewportStyles, frames, tick, navigator, copied: () => copied, moves: () => moves };
 }
 
 test('preview animates slowly, outline before fill, pauses and returns complete settings to edit', () => {
@@ -130,7 +132,7 @@ test('Share copies every setting with confirmation, including through a hidden c
   assert.equal(s.nodes['share-status'].textContent, 'Link copied');
   const url = new URL(s.copied());
   assert.equal(url.origin, 'https://emilieidea-co-uk.github.io');
-  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/');
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/horse/');
   assert.deepEqual(readSettings(url.search), {
     drawing: 'horse', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
     pattern: 'rows', spacing: 48, angle: 90,
@@ -158,4 +160,29 @@ test('preview honors disabled steps and Back to edit targets the last available 
   assert.match(fill.nodes.description.textContent, /grey fill build up/);
   assert.equal(fill.moves().length, 80);
   assert.equal(new URL(fill.nodes.back.href, 'https://example.com').searchParams.get('step'), '3');
+});
+
+
+test('drawing routes override conflicting query drawing and Share keeps the matching path', async () => {
+  const s = setup(true, false, { hasOutline: true, hasFill: true }, { drawing: 'flower' });
+  assert.match(s.nodes.description.textContent, /^Flower/);
+  await s.nodes.share.listeners.click();
+  const url = new URL(s.copied());
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/flower/');
+  assert.equal(url.searchParams.get('drawing'), 'flower');
+  assert.equal(url.searchParams.get('length'), '10');
+  assert.equal(url.searchParams.get('angle'), '90');
+  assert.equal(new URL(s.nodes.back.href, url).searchParams.get('drawing'), 'flower');
+});
+
+test('legacy query-only preview links forward to the drawing page with every selected setting', () => {
+  const s = setup(false, false, { hasOutline: true, hasFill: true }, { legacy: 'true' });
+  assert.equal(s.replacements.length, 1);
+  const url = new URL(s.replacements[0], 'https://example.com');
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/horse/');
+  assert.deepEqual(readSettings(url.search), {
+    drawing: 'horse', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
+    pattern: 'rows', spacing: 48, angle: 90,
+  });
+  assert.equal(s.frames.size, 0, 'legacy page should forward before starting playback');
 });

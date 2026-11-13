@@ -108,7 +108,7 @@ Prev returns to the outline while keeping settings. The Next button becomes
 ## Preview — watch the stitches
 
 1. In Step 3, choose **Preview**. The animation opens at
-   `/studio/drawing-to-stitches/preview/` with your settings in its URL.
+   `/studio/drawing-to-stitches/preview/<drawing-id>/` with your settings in its URL.
    This standalone page shows Back to edit, title, short description, two
    playback buttons, Share link, canvas, progress status and an original-post link,
    with no site sidebar or footer.
@@ -182,3 +182,21 @@ npm run test:studio
 npm run build
 npm run test:artwork-build
 ```
+
+## Drawing-specific social sharing
+
+Each drawing gets its own static preview page and 1200 × 630 PNG card during the
+Astro build. The card uses that drawing's default pattern, spacing, direction,
+stitch lengths and widths, and honors `hasOutline` / `hasFill`. It is metadata
+only and does not add an image to the visible page. The title remains
+**EmilieIdea - Stitch**; the card also names the drawing.
+
+The drawing ID in a new preview URL takes precedence over a conflicting
+`drawing` query parameter so the card and animation always refer to the same
+shape. Other query parameters still restore the visitor's choices. Old query-only
+URLs forward visitors to the corresponding drawing page; social crawlers reading
+those old URLs still receive a generic card. Re-share using the Share button to
+get the drawing-specific card. No external image service is needed.
+
+Use `npm run gen:studio-share` to inspect cards in `.astro/studio/share/`.
+Production PNGs are emitted automatically at each drawing page's `share.png` URL.

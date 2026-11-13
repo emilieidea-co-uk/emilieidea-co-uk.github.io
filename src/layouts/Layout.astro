@@ -23,6 +23,7 @@ import { site } from '../config';
 
 interface Props {
   title?: string;
+  fullTitle?: string;
   description?: string;
   socialImage?: { src: string; width: number; height: number; alt: string };
   category?: import('../lib/project-photos').ProjectCollection;
@@ -30,8 +31,8 @@ interface Props {
   fitViewport?: boolean;
 }
 
-const { title, description = site.description, socialImage, category, standalone = false, fitViewport = false } = Astro.props;
-const pageTitle = title ? `${title} — ${site.name}` : site.title;
+const { title, fullTitle, description = site.description, socialImage, category, standalone = false, fitViewport = false } = Astro.props;
+const pageTitle = fullTitle ?? (title ? `${title} — ${site.name}` : site.title);
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 const ogImage = absoluteUrl(socialImage?.src ?? '/og.jpg', Astro.site);
 // Footer copyright year (fixed at build time — a rebuild refreshes it).

@@ -118,10 +118,55 @@ assert SITE + preview_path in sitemap
 assert {'rel': 'canonical', 'href': SITE + preview_path} in studio_preview.links
 assert any(a.get('href') == '/studio/drawing-to-stitches/' for a in studio_preview.anchors)
 assert any(a.get('href') == '/artwork/instagram-CWO3doINYa7-01/' for a in studio_preview.anchors)
-assert studio_preview.headings == ['Stitch preview']
+assert studio_preview.headings == ['Stitch']
+assert studio_preview.meta['og:title'] == 'EmilieIdea - Stitch'
+assert studio_preview.meta['twitter:title'] == 'EmilieIdea - Stitch'
+share_image = urlparse(studio_preview.meta['og:image'])
+assert share_image.scheme == 'https' and share_image.netloc == 'emilieidea-co-uk.github.io'
+assert studio_preview.meta['twitter:image'] == studio_preview.meta['og:image']
+assert studio_preview.meta['twitter:card'] == 'summary_large_image'
+assert studio_preview.meta['og:image:width'] == '1200'
+assert studio_preview.meta['og:image:height'] == '630'
+assert studio_preview.meta['og:image:alt'] == studio_preview.meta['twitter:image:alt']
+assert 'petal medallion' in studio_preview.meta['og:image:alt'].lower()
+share_file = DIST / share_image.path.lstrip('/')
+assert share_file.suffix == '.png' and share_file.is_file()
+png = share_file.read_bytes()
+assert png[:8] == b'\x89PNG\r\n\x1a\n'
+assert int.from_bytes(png[16:20], 'big') == 1200 and int.from_bytes(png[20:24], 'big') == 630
+assert not any(image.get('src') == share_image.path for image in studio_preview.images)
 preview_html = (DIST / 'studio/drawing-to-stitches/preview/index.html').read_text()
 assert '<footer' not in preview_html and 'id="primary-nav"' not in preview_html
 assert 'class="sidebar"' not in preview_html
+assert 'data-legacy="true"' in preview_html
+share_files = set()
+share_contents = set()
+for definition in (ROOT / 'src/data/studio').glob('*.json'):
+    drawing = json.loads(definition.read_text())
+    path = f'/studio/drawing-to-stitches/preview/{drawing["id"]}/'
+    page = Page(DIST / path.lstrip('/') / 'index.html')
+    assert SITE + path in sitemap
+    assert {'rel': 'canonical', 'href': SITE + path} in page.links
+    assert page.meta['og:url'] == SITE + path
+    assert page.meta['og:title'] == page.meta['twitter:title'] == 'EmilieIdea - Stitch'
+    assert page.meta['og:image'] == page.meta['twitter:image'] == SITE + path + 'share.png'
+    assert page.meta['og:image:width'] == '1200' and page.meta['og:image:height'] == '630'
+    assert drawing['name'] in page.meta['og:image:alt']
+    assert drawing['name'] in page.meta['og:description']
+    assert page.meta['og:image:alt'] == page.meta['twitter:image:alt']
+    assert page.headings == ['Stitch'] and not page.images
+    html = (DIST / path.lstrip('/') / 'index.html').read_text()
+    assert f'data-drawing="{drawing["id"]}"' in html and 'data-legacy="true"' not in html
+    assert 'class="sidebar"' not in html and '<footer' not in html
+    image = DIST / path.lstrip('/') / 'share.png'
+    assert image.is_file()
+    png = image.read_bytes()
+    assert png[:8] == b'\x89PNG\r\n\x1a\n'
+    assert int.from_bytes(png[16:20], 'big') == 1200 and int.from_bytes(png[20:24], 'big') == 630
+    share_files.add(image)
+    share_contents.add(png)
+assert len(share_contents) == len(share_files), 'every drawing must have a distinct sharing image'
+
 assert 'id="primary-nav"' in (DIST / 'studio/index.html').read_text()
 assert '<footer' in (DIST / 'studio/index.html').read_text()
 editor_html = (DIST / 'studio/drawing-to-stitches/index.html').read_text()

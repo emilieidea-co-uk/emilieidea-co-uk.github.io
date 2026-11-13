@@ -2,7 +2,7 @@ import { studies, initialStudy, studySvg, WIDTH, HEIGHT } from './studies';
 import { sampleStudy } from './sample-svg';
 import { generateStitches } from './stitches';
 import { renderStitches } from './render-canvas';
-import { readSettings, settingsQuery, defaultsForStudy, DEFAULT_SETTINGS } from './settings';
+import { readSettings, settingsQuery, defaultsForStudy, DEFAULT_SETTINGS, previewPath } from './settings';
 import { withBase } from '../lib/urls';
 import { initViewportHeight } from './viewport';
 import { availableStages, lastStage, stageTitle } from './navigation';
@@ -116,7 +116,7 @@ export function initStitchStudy(): void {
       lineWidth: Number(lineWidth.value), fillLineWidth: Number(fillLineWidth.value),
       pattern: pattern.value as Pattern, spacing: Number(spacing.value), angle: Number(angle.value),
     };
-    window.location.assign(`${withBase('/studio/drawing-to-stitches/preview/')}?${settingsQuery(settings)}`);
+    window.location.assign(`${withBase(previewPath(settings.drawing))}?${settingsQuery(settings)}`);
   });
   const applySettings = (settings: StudySettings) => {
     drawing.value = settings.drawing;

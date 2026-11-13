@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runningStitches, clipSegment, generateStitches, inside, stitchesSvg, playbackPosition } from '../src/studio/stitches.ts';
 import { studies, studySvg } from '../src/studio/studies.ts';
-import { DEFAULT_SETTINGS, defaultsForStudy, readSettings, settingsQuery } from '../src/studio/settings.ts';
+import { DEFAULT_SETTINGS, defaultsForStudy, previewPath, readSettings, settingsQuery } from '../src/studio/settings.ts';
 import { stitchDistances, segmentPosition } from '../src/studio/playback.ts';
 import type { Point, StitchOptions } from '../src/studio/stitches.ts';
 const rectangle = (x: number, y: number, w: number, h: number): Point[] => [
@@ -114,4 +114,14 @@ test('outline and fill flags independently control stitch generation', () => {
   const fill = generateStitches([shape], { ...options, outline: false, fill: true });
   assert.ok(fill.length > 0);
   assert.ok(fill.every(segment => segment.kind === 'fill'));
+});
+
+
+test('drawing-specific previews restore defaults and prefer the route drawing over the query', () => {
+  for (const study of studies) {
+    assert.equal(previewPath(study.id), `/studio/drawing-to-stitches/preview/${study.id}/`);
+    assert.deepEqual(readSettings('', study.id), defaultsForStudy(study));
+    assert.equal(readSettings('drawing=unknown&length=10', study.id).drawing, study.id);
+    assert.equal(readSettings('drawing=unknown&length=10', study.id).length, 10);
+  }
 });

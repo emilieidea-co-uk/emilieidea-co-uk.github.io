@@ -1,0 +1,11 @@
+---
+import StitchPreview from '../../../../../components/studio/StitchPreview.astro';
+import { studies } from '../../../../../studio/studies';
+import type { Study } from '../../../../../studio/studies';
+export function getStaticPaths() {
+  return studies.map(study => ({ params: { drawing: study.id }, props: { study } }));
+}
+interface Props { study: Study }
+const { study } = Astro.props;
+---
+<StitchPreview study={study} />

@@ -26,9 +26,10 @@ interface Props {
   description?: string;
   socialImage?: { src: string; width: number; height: number; alt: string };
   category?: import('../lib/project-photos').ProjectCollection;
+  standalone?: boolean;
 }
 
-const { title, description = site.description, socialImage, category } = Astro.props;
+const { title, description = site.description, socialImage, category, standalone = false } = Astro.props;
 const pageTitle = title ? `${title} — ${site.name}` : site.title;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 const ogImage = absoluteUrl(socialImage?.src ?? '/og.jpg', Astro.site);
@@ -100,16 +101,16 @@ const year = new Date().getFullYear();
     <BaseSchema />
   </head>
   <body>
-    <Sidebar category={category} />
-    <main class="main">
+    {!standalone && <Sidebar category={category} />}
+    <main class:list={['main', { 'is-standalone': standalone }]}>
       <slot />
-      <footer class="site-footer">
+      {!standalone && <footer class="site-footer">
         <p class="site-footer__line">
           <span>© {year} {site.name}</span>
           <a class="site-footer__link" href={withBase('/privacy/')}>Privacy</a>
           <a class="site-footer__link" href={withBase('/license/')}>Artwork &amp; Image Use</a>
         </p>
-      </footer>
+      </footer>}
     </main>
     <script>
       // Deter casual saving/dragging of photos site-wide (a deterrent, not DRM).
@@ -122,3 +123,7 @@ const year = new Date().getFullYear();
     </script>
   </body>
 </html>
+
+<style>
+  .main.is-standalone { margin-left: 0; }
+</style>

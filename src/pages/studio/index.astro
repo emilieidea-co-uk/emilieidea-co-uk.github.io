@@ -1,0 +1,39 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { withBase } from '../../lib/urls';
+import { projectPhoto } from '../../lib/project-photos';
+import { renderPhoto } from '../../lib/photos';
+const reference = projectPhoto('scrapingby', 'eco_zhonglaise_2021-11-13_CWO3doINYa7_01.jpg');
+const photo = reference ? await renderPhoto(reference.image) : undefined;
+---
+<Layout title="Studio" description="Explore drawing, pattern and hand stitching through small interactive studies.">
+  <article class="page prose">
+    <h1>Studio</h1>
+    <p class="lede">A place to try an idea, change a detail and see what happens.</p>
+    <p>These small studies explore the lines and patterns behind handmade work.</p>
+    <section class="studio-card">
+      <p class="studio-card__step">First study · Three steps</p>
+      <h2><a href={withBase('/studio/drawing-to-stitches/')}>From drawing to hand stitches →</a></h2>
+      {reference && photo && <figure class="studio-card__artwork">
+        <a href={withBase('/studio/drawing-to-stitches/')} aria-label="Start From drawing to hand stitches">
+          <img class="photo__img" src={photo.src} srcset={photo.srcset}
+            sizes="(min-width: 1024px) 680px, calc(100vw - 80px)"
+            width={photo.width} height={photo.height}
+            alt="Geometric petal guide beside running stitches on dark fabric"
+            loading="eager" decoding="async" />
+        </a>
+        <figcaption>The geometric guide and hand stitching behind this study.</figcaption>
+      </figure>}
+      <p>Choose a drawing and turn its outlines into running stitches. Try changing the length of each stitch and the spaces between them.</p>
+      <p>Choose a drawing, stitch its outline, then add an open pattern fill. Use Prev and Next to explore, or Reset to start again. Choose Preview to watch the stitches build up. {reference && <a href={reference.href}>View original post →</a>}</p>
+    </section>
+  </article>
+</Layout>
+<style>
+  .studio-card { border: 1px solid var(--line); padding: clamp(1rem, 3vw, 2rem); margin-top: 2rem; border-radius: 4px; }
+  .studio-card h2 { margin-top: .4rem; }
+  .studio-card__step { color: var(--muted); font-size: .95rem; }
+  .studio-card__artwork { margin: 1.25rem 0; }
+  .studio-card__artwork a { display: block; }
+  .studio-card__artwork figcaption { margin-top: .5rem; color: var(--muted); font-size: .95rem; }
+</style>

@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StitchStudy from '../../components/studio/StitchStudy.astro';
+import { withBase } from '../../lib/urls';
+---
+<Layout title="From drawing to hand stitches" description="Turn a drawing into running stitches and explore the spaces between them.">
+  <article class="stitch-tutorial">
+    <header class="page prose">
+      <p><a href={withBase('/studio/')}>← Studio</a></p>
+      <h1>From drawing to hand stitches</h1>
+      <p class="lede">Choose a drawing → Stitch the outline → Add a pattern</p>
+      <p>A running stitch is a line made of small marks, with fabric showing between them. Choose a study drawing, then change the stitch length and the gap to explore its rhythm.</p>
+    </header>
+    <StitchStudy />
+    <section class="page prose stitch-notes">
+      <h2>What to try</h2>
+      <ol>
+        <li>Start with the petal medallion. Notice that the centre stays open.</li>
+        <li>Shorten the stitches, then make the gaps wider. How does the line change?</li>
+        <li>Choose the flower. Its stem is a separate path, so it is never joined to the flower by an extra line.</li>
+        <li>Try the horse and compare its curves and corners.</li>
+      </ol>
+      <p>In Step 1, choose a drawing. Choose <strong>Next</strong> for Step 2 to stitch the outline, then Next again for Step 3 to add Petals, Rows or Crosshatch inside the grey areas. <strong>Preview</strong> opens an animation of your stitches. <strong>Prev</strong> goes back without losing your settings. <strong>Reset</strong> returns to Step 1 with the defaults.</p>
+      <h2>From the work</h2>
+      <p>The geometric medallion is a new study inspired by the drawing guide and hand stitching in <a href={withBase('/artwork/instagram-CWO3doINYa7-01/')}>this piece by Emilie →</a>. The flower and horse are also study drawings, rather than tracings of original artworks.</p>
+      <p>This is a visual exploration of stitch rhythm. It does not simulate fabric tension or prescribe a hand-sewing route. Everything runs in your browser.</p>
+    </section>
+  </article>
+</Layout>
+<style>
+  .stitch-tutorial { width: 100%; min-width: 0; max-width: 1200px; margin-inline: auto; }
+  .stitch-tutorial > header { margin-inline: 0; }
+  .stitch-notes { margin: 2rem 0 0; }
+</style>

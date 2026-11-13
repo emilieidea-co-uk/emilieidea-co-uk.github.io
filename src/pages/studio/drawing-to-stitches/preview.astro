@@ -1,0 +1,52 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { withBase } from '../../../lib/urls';
+---
+<Layout standalone title="Stitch preview" description="Watch a drawing become a hand-stitch pattern, one stitch at a time.">
+  <article class="stitch-animation">
+    <header class="prose">
+      <p><a id="preview-back" href={withBase('/studio/drawing-to-stitches/')}>← Back to edit</a></p>
+      <h1>Stitch preview</h1>
+      <p id="preview-description">Watch the outline first, then the pattern fill. The small dot shows the current stitch.</p>
+    </header>
+    <div class="preview-controls" aria-label="Animation controls">
+      <button id="preview-play" type="button" disabled>Pause</button>
+      <button id="preview-restart" type="button" disabled>Restart</button>
+      <button id="preview-share" type="button" disabled>Share</button>
+    </div>
+    <p id="preview-share-status" class="share-status" role="status" aria-live="polite"></p>
+    <figure>
+      <canvas id="preview-canvas" width="600" height="440" role="img" aria-label="Animated hand-stitch study" aria-describedby="preview-status"></canvas>
+      <figcaption id="preview-status" role="status" aria-live="polite">Preparing the stitch animation…</figcaption>
+    </figure>
+    <p class="preview-original"><a href={withBase('/artwork/instagram-CWO3doINYa7-01/')}>View original post →</a></p>
+    <noscript><p>Turn on JavaScript to watch the stitch animation.</p></noscript>
+  </article>
+</Layout>
+<script>
+  import { initStitchPreview } from '../../../studio/preview';
+  try { initStitchPreview(); }
+  catch (error) {
+    console.error('Studio preview failed:', error);
+    const status = document.getElementById('preview-status');
+    if (status) status.textContent = error instanceof Error ? `${error.message} Use Back to edit to adjust your pattern.` : 'The preview could not load. Use Back to edit to try another pattern.';
+  }
+</script>
+<style>
+  .stitch-animation { width: 100%; min-width: 0; max-width: 1000px; margin-inline: auto; }
+  .preview-controls { display: flex; flex-wrap: nowrap; gap: .75rem; margin-block: 1.25rem; }
+  button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--muted); border-radius: 3px; padding: .5rem .75rem; min-height: 44px; min-width: 0; }
+  button { cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .share-status { color: var(--muted); font-size: 1rem; }
+  .share-status:empty { display: none; }
+  figure { margin: 0; }
+  canvas { display: block; width: 100%; height: auto; background: #f5f1e7; border-radius: 3px; }
+  figcaption { color: var(--muted); font-size: 1rem; margin-top: .75rem; }
+  .preview-original { margin-top: 1.5rem; }
+  @media (max-width: 640px) {
+    .preview-controls { gap: .5rem; }
+    button { font-size: 1rem; padding-inline: .6rem; }
+  }
+</style>

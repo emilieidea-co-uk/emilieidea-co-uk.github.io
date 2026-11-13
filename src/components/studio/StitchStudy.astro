@@ -1,0 +1,108 @@
+---
+import { studies, studySvg } from '../../studio/studies';
+---
+<section class="stitch-study" aria-label="Running stitch study">
+  <h2 id="study-stage" aria-live="polite" aria-atomic="true">Step 1 of 3 · Choose a drawing</h2>
+  <p id="study-instructions">Choose a study drawing. Next will turn its outlines into running stitches.</p>
+  <div class="stitch-controls is-drawing-only" id="study-controls">
+    <label for="study-drawing" id="study-drawing-control">Study drawing
+      <select id="study-drawing">{studies.map(study => <option value={study.id}>{study.title}</option>)}</select>
+    </label>
+    <label for="study-length" data-stitch-setting hidden>Stitch length
+      <select id="study-length" disabled>
+        {Array.from({ length: 13 }, (_, i) => i + 2).map(value => <option value={value} selected={value === 6}>{value}</option>)}
+      </select>
+    </label>
+    <label for="study-gap" data-stitch-setting hidden>Gap between stitches
+      <select id="study-gap" disabled>
+        {Array.from({ length: 12 }, (_, i) => i + 1).map(value => <option value={value} selected={value === 4}>{value}</option>)}
+      </select>
+    </label>
+    <label for="study-line-width" data-stitch-setting hidden>Line width
+      <select id="study-line-width" disabled>
+        {[0.5, 1, 1.35, 2, 3, 4].map(value => <option value={value} selected={value === 1.35}>{value}</option>)}
+      </select>
+    </label>
+  </div>
+  <fieldset class="stitch-pattern-controls" id="study-pattern-controls" hidden>
+    <legend>Pattern fill</legend>
+    <div class="stitch-pattern-options">
+    <label for="study-pattern">Pattern
+      <select id="study-pattern" disabled>
+        <option value="petals">Petals</option><option value="rows">Rows</option><option value="crosshatch">Crosshatch</option>
+      </select>
+    </label>
+    <label for="study-spacing">Pattern spacing
+      <select id="study-spacing" disabled>{[12, 18, 24, 28, 36, 48].map(value => <option value={value} selected={value === 28}>{value}</option>)}</select>
+    </label>
+    <label for="study-angle">Direction
+      <select id="study-angle" disabled>{[0, 15, 30, 45, 60, 90].map(value => <option value={value}>{value}°</option>)}</select>
+    </label>
+    <label for="study-fill-line-width">Fill line width
+      <select id="study-fill-line-width" disabled>
+        {[0.5, 1, 1.35, 2, 3, 4].map(value => <option value={value}>{value}</option>)}
+      </select>
+    </label>
+    </div>
+  </fieldset>
+  <p class="stitch-description" id="study-description">{studies[0].description}</p>
+  <div class="stitch-previews" id="study-previews">
+    <figure id="study-drawing-preview">
+      <figcaption>Drawing</figcaption>
+      <div class="stitch-paper" id="study-original" set:html={studySvg(studies[0])} />
+    </figure>
+    <figure id="study-stitch-preview" hidden>
+      <figcaption>Running stitches</figcaption>
+      <div class="stitch-paper" id="study-canvas" aria-busy="true"></div>
+    </figure>
+  </div>
+  <p class="stitch-status" id="study-status" role="status" aria-live="polite">Loading the stitch preview…</p>
+  <div class="stitch-actions">
+    <button id="study-prev" type="button" disabled>Prev</button>
+    <button id="study-next" type="button" disabled>Next</button>
+    <button id="study-reset" type="button" disabled>Reset</button>
+  </div>
+  <noscript><p>Turn on JavaScript to try the stitch preview. You can still view the study drawing above.</p></noscript>
+</section>
+<script>
+  import { initDrawingSelection } from '../../studio/drawing-selection';
+  import { initStitchStudy } from '../../studio/canvas';
+  initDrawingSelection();
+  try {
+    initStitchStudy();
+  } catch (error) {
+    console.error('Studio could not start:', error);
+    const status = document.getElementById('study-status');
+    if (status) status.textContent = 'You can still choose a drawing. The stitch preview could not load; refresh to try the next steps again.';
+    document.getElementById('study-canvas')?.setAttribute('aria-busy', 'false');
+  }
+</script>
+<style>
+  .stitch-study { margin-block: 1.75rem; width: 100%; max-width: 100%; min-width: 0; }
+  .stitch-controls, .stitch-pattern-options { display: grid; grid-template-columns: repeat(4, minmax(7rem, 1fr)); align-items: end; gap: 1rem; border-block: 1px solid var(--line); padding-block: 1rem; overflow-x: auto; max-width: 100%; min-width: 0; }
+  .stitch-pattern-controls { margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); min-width: 0; width: 100%; max-width: 100%; }
+  .stitch-pattern-options { border: 0; padding-block: 0; }
+  .stitch-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-block: 1rem; }
+  .stitch-controls { grid-template-columns: repeat(3, minmax(7rem, 1fr)); }
+  .stitch-controls.is-drawing-only { grid-template-columns: minmax(0, 1fr); }
+  .stitch-controls.is-drawing-only label { max-width: 20rem; }
+  #study-stage { scroll-margin-top: 8rem; }
+  [hidden] { display: none !important; }
+  label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem; font-size: 1rem; min-width: 0; }
+  select, button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--muted); border-radius: 3px; padding: .5rem .65rem; min-height: 44px; }
+  select { width: 100%; min-width: 0; }
+  button { cursor: pointer; }
+  :is(button, select):focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  :is(button, select):disabled { opacity: .5; cursor: not-allowed; }
+  .stitch-previews { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 600px; margin-inline: auto; }
+  figure { margin: 0; min-width: 0; }
+  figcaption { margin-bottom: .5rem; }
+  .stitch-paper { width: 100%; aspect-ratio: 600 / 440; background: #f5f1e7; border-radius: 3px; overflow: hidden; }
+  .stitch-paper :global(svg), .stitch-paper :global(canvas) { display: block; width: 100% !important; height: 100% !important; }
+  .stitch-description, .stitch-status { color: var(--muted); font-size: 1rem; }
+  .stitch-description { min-height: 3em; }
+  .stitch-status { min-height: 1.5em; }
+  @media (max-width: 640px) {
+    .stitch-actions button { flex: 1; }
+  }
+</style>

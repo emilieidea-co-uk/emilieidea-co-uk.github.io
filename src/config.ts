@@ -27,6 +27,7 @@ export const nav: NavItem[] = [
   { label: 'Artworks', href: withBase('/') },
   { label: 'ScrapingBy', href: withBase('/scrapingby/') },
   { label: 'Embroideries', href: withBase('/embroideries/') },
+  { label: 'Studio', href: withBase('/studio/') },
   { label: 'Blog', href: withBase('/blog/') },
   { label: 'About', href: withBase('/about/') },
   { label: 'Contact', href: withBase('/contact/') },

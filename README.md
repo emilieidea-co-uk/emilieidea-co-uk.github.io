@@ -93,6 +93,18 @@ use the exact filename in `src`. Project references reuse captions and respect
 publication settings. Blog-only images go in `src/assets/blog/` and omit
 `collection`. Routine text editing is covered only in the user guide.
 
+## Studio development
+
+The first tutorial is at `/studio/drawing-to-stitches/`. The three steps use
+TypeScript and native Canvas 2D: choose a drawing, stitch its outline, then add an open pattern fill.
+**Prev** and **Next** preserve settings; **Reset** starts again at Step 1.
+Step 3's **Preview** button opens the stitch animation on a separate page;
+**Back to edit** restores all settings. Follow the
+[manual test checklist](doc/StudioStitchPlan.md) to review each step and preview.
+
+Run `npm run check:studio` and `npm run test:studio` to check the Canvas controls,
+rendering and stitch geometry. No drawing library or submodule is required.
+
 ## Refresh logos and sharing artwork
 
 The source logo is `src/assets/ei_logo.jpg`; category lettering is generated

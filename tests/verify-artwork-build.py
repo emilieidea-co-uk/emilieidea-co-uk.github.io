@@ -112,4 +112,16 @@ assert generated_tags == tag_names  # Draft-only and removed tags must not gener
 
 blog = Page(DIST / 'blog/a-line-through-thread-clay-and-print/index.html')
 assert len(blog.tiles) == 4 and all(tile.get('data-artwork-url') for tile in blog.tiles)
+studio_preview = Page(DIST / 'studio/drawing-to-stitches/preview/index.html')
+preview_path = '/studio/drawing-to-stitches/preview/'
+assert SITE + preview_path in sitemap
+assert {'rel': 'canonical', 'href': SITE + preview_path} in studio_preview.links
+assert any(a.get('href') == '/studio/drawing-to-stitches/' for a in studio_preview.anchors)
+assert any(a.get('href') == '/artwork/instagram-CWO3doINYa7-01/' for a in studio_preview.anchors)
+assert studio_preview.headings == ['Stitch preview']
+preview_html = (DIST / 'studio/drawing-to-stitches/preview/index.html').read_text()
+assert '<footer' not in preview_html and 'id="primary-nav"' not in preview_html
+assert 'class="sidebar"' not in preview_html
+assert 'id="primary-nav"' in (DIST / 'studio/index.html').read_text()
+assert '<footer' in (DIST / 'studio/index.html').read_text()
 print(f'Production checks passed: {count} image pages, {len(tag_names)} tag pages, grouped galleries and carousels, blog links, preview files, metadata, and sitemap.')

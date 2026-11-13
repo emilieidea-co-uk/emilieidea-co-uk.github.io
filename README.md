@@ -3,7 +3,7 @@
 An artist portfolio for pottery, printmaking, scratchboard, and embroidery, built
 with Astro and published at **https://emilieidea-co-uk.github.io/**.
 
-Navigation: **Artworks · ScrapingBy · Embroideries · Blog · About · Contact**.
+Navigation: **Artworks · ScrapingBy · Embroideries · Studio · Blog · About · Contact**.
 Artworks is the home page. Each gallery has light/dark branding and a lightbox.
 Published images from the same Instagram post share one gallery tile and carousel;
 every image retains its own permanent URL and share preview.
@@ -101,6 +101,11 @@ TypeScript and native Canvas 2D: choose a drawing, stitch its outline, then add 
 Step 3's **Preview** button opens the stitch animation on a separate page;
 **Back to edit** restores all settings. Follow the
 [manual test checklist](doc/StudioStitchPlan.md) to review each step and preview.
+
+Drawings are JSON/SVG pairs in `src/data/studio/` and `src/assets/studio/`.
+Their names, defaults and available steps come from JSON. Only SVG `<path>`
+elements are supported; new pairs are discovered automatically. See
+[adding a Studio drawing](doc/StudioStitchPlan.md#add-or-edit-a-drawing).
 
 Run `npm run check:studio` and `npm run test:studio` to check the Canvas controls,
 rendering and stitch geometry. No drawing library or submodule is required.

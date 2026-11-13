@@ -5,15 +5,18 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { readSettings, settingsQuery } from '../src/studio/settings.ts';
 import { FILL_COLOR, OUTLINE_COLOR, playbackPosition } from '../src/studio/stitches.ts';
+import { lastStage } from '../src/studio/navigation.ts';
+import { stitchDistances, segmentPosition } from '../src/studio/playback.ts';
 
 const compile = source => ts.transpileModule(source, { compilerOptions: {
   module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
 } }).outputText.replace(/^import .+;\n/gm, '').replace(/^export /gm, '');
 const code = compile(await readFile(new URL('../src/studio/render-canvas.ts', import.meta.url), 'utf8')) +
+  compile(await readFile(new URL('../src/studio/viewport.ts', import.meta.url), 'utf8')) +
   compile(await readFile(new URL('../src/studio/clipboard.ts', import.meta.url), 'utf8')) +
   compile(await readFile(new URL('../src/studio/preview.ts', import.meta.url), 'utf8'));
 
-function setup(reduced = false) {
+function setup(reduced = false, longFill = false, flags = { hasOutline: true, hasFill: true }) {
   const events = {}, mediaEvents = {}, viewportEvents = {}, viewportStyles = {}, frames = new Map();
   let frameId = 0, moves = [], copied = '';
   const context = { setTransform() {}, fillRect() { moves = []; }, beginPath() {}, stroke() {},
@@ -35,7 +38,7 @@ function setup(reduced = false) {
   };
   const media = { matches: reduced, addEventListener(name, callback) { mediaEvents[name] = callback; } };
   const generated = Array.from({ length: 100 }, (_, i) => ({
-    kind: i < 80 ? 'fill' : 'outline', from: { x: i, y: 0 }, to: { x: i + 1, y: 0 },
+    kind: i < 80 ? 'fill' : 'outline', from: { x: i, y: 0 }, to: { x: i + (longFill && i < 80 ? 4 : 1), y: 0 },
   }));
   const query = 'drawing=horse&length=10&gap=6&lineWidth=3&fillLineWidth=0.5&pattern=rows&spacing=48&angle=90';
   const navigator = { clipboard: { writeText: async url => { copied = url; } } };
@@ -43,9 +46,9 @@ function setup(reduced = false) {
   runInNewContext(code + '\ninitStitchPreview();', {
     document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io' }, matchMedia: () => media,
       addEventListener(name, callback) { events[name] = callback; } },
-    WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition,
-    readSettings, settingsQuery, withBase: path => path, studies: [{ id: 'horse', title: 'Horse' }],
-    sampleStudy: () => [], generateStitches: () => generated,
+    WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition, stitchDistances, segmentPosition,
+    readSettings, settingsQuery, lastStage, withBase: path => path, studies: [{ id: 'horse', name: 'Horse', ...flags }],
+    sampleStudy: () => [], generateStitches: (_, options) => generated.filter(segment => segment.kind === 'fill' ? options.fill : options.outline),
     requestAnimationFrame(callback) { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame(id) { frames.delete(id); },
   });
@@ -101,13 +104,23 @@ test('reduced motion starts complete and paused; leaving the page cancels animat
   assert.equal(s.frames.size, 0);
 });
 
+test('longer fill segments are revealed at the same thread speed as short outline segments', () => {
+  const s = setup(false, true);
+  s.tick(0); s.tick(100);
+  assert.equal(s.moves().length, 12); // 12 units of the short outline segments.
+  s.tick(200);
+  assert.equal(s.moves().length, 21); // 20 outline units, then one 4-unit fill segment.
+  s.tick(300);
+  assert.equal(s.moves().length, 24); // The next 12 units reveal only three more fill segments.
+});
+
 test('preview follows the visible browser height when toolbars or orientation change', () => {
   const s = setup();
-  assert.equal(s.viewportStyles['--preview-viewport-height'], '780px');
+  assert.equal(s.viewportStyles['--studio-viewport-height'], '780px');
   s.viewport.height = 500; s.viewportEvents.resize();
-  assert.equal(s.viewportStyles['--preview-viewport-height'], '500px');
+  assert.equal(s.viewportStyles['--studio-viewport-height'], '500px');
   s.viewport.height = 420; s.events.resize();
-  assert.equal(s.viewportStyles['--preview-viewport-height'], '420px');
+  assert.equal(s.viewportStyles['--studio-viewport-height'], '420px');
 });
 
 test('Share copies every setting with confirmation, including through a hidden clipboard fallback', async () => {
@@ -133,4 +146,16 @@ test('Share copies every setting with confirmation, including through a hidden c
   await s.nodes.share.listeners.click();
   assert.match(s.nodes['share-status'].textContent, /Could not copy/);
   assert.equal(s.document.copyField, null);
+});
+
+
+test('preview honors disabled steps and Back to edit targets the last available step', () => {
+  const outline = setup(true, false, { hasOutline: true, hasFill: false });
+  assert.match(outline.nodes.description.textContent, /outline build up/);
+  assert.equal(outline.moves().length, 20);
+  assert.equal(new URL(outline.nodes.back.href, 'https://example.com').searchParams.get('step'), '2');
+  const fill = setup(true, false, { hasOutline: false, hasFill: true });
+  assert.match(fill.nodes.description.textContent, /grey fill build up/);
+  assert.equal(fill.moves().length, 80);
+  assert.equal(new URL(fill.nodes.back.href, 'https://example.com').searchParams.get('step'), '3');
 });

@@ -4,6 +4,9 @@ import mdx from '@astrojs/mdx';
 // Declared as a direct dependency: since Astro 7.3 it is a peer dependency of
 // `astro` and `@astrojs/mdx` (which renders .mdx through this processor).
 import { unified } from '@astrojs/markdown-remark';
+import { generateStudioCatalog, studioCatalogPlugin } from './scripts/studio-catalog.mjs';
+
+generateStudioCatalog();
 
 // https://astro.build/config
 export default defineConfig({
@@ -32,6 +35,8 @@ export default defineConfig({
   // Poll for edits so dev previews also update when filesystem notifications
   // are missed (for example, edits made through the shared workspace).
   vite: {
+    // Refresh generated drawing data in both the server and browser.
+    plugins: [studioCatalogPlugin()],
     build: {
       // Keep min/max-width media queries for iOS 15 (including iPhone 7 Plus).
       // Modern range syntax emitted by the default minifier needs Safari 16.4.

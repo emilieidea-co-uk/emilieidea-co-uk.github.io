@@ -3,10 +3,12 @@ import Layout from '../../layouts/Layout.astro';
 import StitchStudy from '../../components/studio/StitchStudy.astro';
 import { withBase } from '../../lib/urls';
 ---
-<Layout title="From drawing to hand stitches" description="Turn a drawing into running stitches and explore the spaces between them.">
+<Layout standalone title="From drawing to hand stitches" description="Turn a drawing into running stitches and explore the spaces between them.">
   <article class="stitch-tutorial">
-    <p><a href={withBase('/studio/')}>← Studio</a></p>
-    <StitchStudy />
+    <div class="step-screen" id="study-screen">
+      <p><a href={withBase('/studio/')}>← Studio</a></p>
+      <StitchStudy />
+    </div>
     <section class="page prose stitch-notes">
       <h2>What to try</h2>
       <ol>
@@ -15,14 +17,16 @@ import { withBase } from '../../lib/urls';
         <li>Choose the flower. Its stem is a separate path, so it is never joined to the flower by an extra line.</li>
         <li>Try the horse and compare its curves and corners.</li>
       </ol>
-      <p>In Step 1, choose a drawing. Choose <strong>Next</strong> for Step 2 to stitch the outline, then Next again for Step 3 to add Petals, Rows or Crosshatch inside the grey areas. <strong>Preview</strong> opens an animation of your stitches. <strong>Prev</strong> goes back without losing your settings. <strong>Reset</strong> returns to Step 1 with the defaults.</p>
+      <p>Use Next to move from the drawing to the stitched outline and pattern fill. Preview opens the animation. Prev keeps your settings; Reset starts again.</p>
       <h2>From the work</h2>
       <p>The geometric medallion is a new study inspired by the drawing guide and hand stitching in <a href={withBase('/artwork/instagram-CWO3doINYa7-01/')}>this piece by Emilie →</a>. The flower and horse are also study drawings, rather than tracings of original artworks.</p>
-      <p>This is a visual exploration of stitch rhythm. It does not simulate fabric tension or prescribe a hand-sewing route. Everything runs in your browser.</p>
     </section>
   </article>
 </Layout>
 <style>
-  .stitch-tutorial { width: 100%; min-width: 0; max-width: 1200px; margin-inline: auto; }
-  .stitch-notes { margin: 2rem 0 0; }
+  .stitch-tutorial { width: 100%; min-width: 0; margin-inline: auto; }
+  .step-screen { display: flex; flex-direction: column; min-height: 0; height: calc(var(--studio-viewport-height, 100vh) - 2 * var(--standalone-padding-y)); }
+  .step-screen > p { flex-shrink: 0; margin: 0 0 .5rem; line-height: 1.25; }
+  .stitch-notes { margin: calc((4.2rem + clamp(.5rem, 2vw, 1.5rem)) / 3) 0 0; padding-top: 0; }
+  .stitch-notes > h2:first-child { margin-top: 0; }
 </style>

@@ -11,7 +11,8 @@ export function renderStitches(context: CanvasRenderingContext2D, segments: Segm
   context.lineJoin = 'round';
   let color = '';
   let activeWidth = lineWidth;
-  for (let i = 0; i < Math.min(segments.length, Math.floor(visibleCount)); i++) {
+  const limit = Math.min(segments.length, Math.max(0, visibleCount));
+  for (let i = 0; i < Math.ceil(limit); i++) {
     const { from, to, kind } = segments[i];
     const nextColor = kind === 'fill' ? FILL_COLOR : OUTLINE_COLOR;
     const nextWidth = kind === 'fill' ? fillLineWidth : lineWidth;
@@ -24,7 +25,8 @@ export function renderStitches(context: CanvasRenderingContext2D, segments: Segm
       activeWidth = nextWidth;
     }
     context.moveTo(from.x, from.y);
-    context.lineTo(to.x, to.y);
+    const fraction = Math.min(1, limit - i);
+    context.lineTo(from.x + (to.x - from.x) * fraction, from.y + (to.y - from.y) * fraction);
   }
   if (color) context.stroke();
 }

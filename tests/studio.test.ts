@@ -2,12 +2,25 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runningStitches, clipSegment, generateStitches, inside, stitchesSvg, playbackPosition } from '../src/studio/stitches.ts';
 import { studies, studySvg } from '../src/studio/studies.ts';
-import { DEFAULT_SETTINGS, readSettings, settingsQuery } from '../src/studio/settings.ts';
+import { DEFAULT_SETTINGS, defaultsForStudy, readSettings, settingsQuery } from '../src/studio/settings.ts';
+import { stitchDistances, segmentPosition } from '../src/studio/playback.ts';
 import type { Point, StitchOptions } from '../src/studio/stitches.ts';
 const rectangle = (x: number, y: number, w: number, h: number): Point[] => [
   { x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }, { x, y },
 ];
 const options: StitchOptions = { length: 6, gap: 4, spacing: 18, angle: 25, pattern: 'rows', outline: false };
+
+test('distance playback interpolates short and long stitches without counting jumps', () => {
+  const distances = stitchDistances([
+    { from: { x: 0, y: 0 }, to: { x: 2, y: 0 } },
+    { from: { x: 100, y: 0 }, to: { x: 108, y: 0 } },
+  ]);
+  assert.deepEqual(distances, [0, 2, 10]);
+  assert.equal(segmentPosition(distances, 1), .5);
+  assert.equal(segmentPosition(distances, 6), 1.5);
+  assert.equal(segmentPosition(distances, 100), 2);
+  assert.equal(segmentPosition([0], 100), 0);
+});
 
 test('preview URL settings round-trip and reject unsupported or excessive values', () => {
   const selected = { ...DEFAULT_SETTINGS, drawing: 'horse', pattern: 'crosshatch' as const, lineWidth: 3, fillLineWidth: .5, spacing: 48, angle: 90 };
@@ -25,7 +38,7 @@ test('running stitches keep their length and gaps around corners, with no joins 
     { from: { x: 4, y: 6 }, to: { x: 4, y: 12 } },
   ]);
   const shapes = [0, 100].map(x => ({ filled: false, contours: [[{ x, y: 0 }, { x: x + 20, y: 0 }]] }));
-  const result = generateStitches(shapes, options);
+  const result = generateStitches(shapes, { ...options, outline: true });
   assert.equal(result.length, 4);
   assert.ok(result.every(line => Math.abs(line.to.x - line.from.x) <= 6));
   assert.throws(() => runningStitches(path, 0, 1));
@@ -78,4 +91,27 @@ test('SVG downloads contain independent visible stitches, and playback clamps to
     assert.ok(studySvg(study).includes('fill-rule="evenodd"'));
     assert.ok(study.shapes.every(shape => shape.contours.every(path => (path.match(/M/g) ?? []).length === 1)));
   }
+});
+
+
+test('shared URL overrides use the selected drawing defaults for every omitted setting', () => {
+  const horse = studies.find(study => study.id === 'horse')!;
+  const saved = horse.defaults;
+  try {
+    horse.defaults = { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 };
+    assert.deepEqual(readSettings('drawing=horse'), defaultsForStudy(horse));
+    assert.deepEqual(readSettings('drawing=horse&length=8&pattern=crosshatch'), {
+      ...defaultsForStudy(horse), length: 8, pattern: 'crosshatch',
+    });
+  } finally { horse.defaults = saved; }
+});
+
+test('outline and fill flags independently control stitch generation', () => {
+  const shape = { filled: true, contours: [rectangle(50, 50, 100, 100)] };
+  const outline = generateStitches([shape], { ...options, outline: true, fill: false });
+  assert.ok(outline.length > 0);
+  assert.ok(outline.every(segment => segment.kind === 'outline'));
+  const fill = generateStitches([shape], { ...options, outline: false, fill: true });
+  assert.ok(fill.length > 0);
+  assert.ok(fill.every(segment => segment.kind === 'fill'));
 });

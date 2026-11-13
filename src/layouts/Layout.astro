@@ -27,9 +27,10 @@ interface Props {
   socialImage?: { src: string; width: number; height: number; alt: string };
   category?: import('../lib/project-photos').ProjectCollection;
   standalone?: boolean;
+  fitViewport?: boolean;
 }
 
-const { title, description = site.description, socialImage, category, standalone = false } = Astro.props;
+const { title, description = site.description, socialImage, category, standalone = false, fitViewport = false } = Astro.props;
 const pageTitle = title ? `${title} — ${site.name}` : site.title;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 const ogImage = absoluteUrl(socialImage?.src ?? '/og.jpg', Astro.site);
@@ -102,7 +103,7 @@ const year = new Date().getFullYear();
   </head>
   <body>
     {!standalone && <Sidebar category={category} />}
-    <main class:list={['main', { 'is-standalone': standalone }]}>
+    <main class:list={['main', { 'is-standalone': standalone, 'is-viewport-fit': standalone && fitViewport }]}>
       <slot />
       {!standalone && <footer class="site-footer">
         <p class="site-footer__line">
@@ -126,12 +127,15 @@ const year = new Date().getFullYear();
 
 <style>
   .main.is-standalone {
+    --standalone-padding-y: clamp(.5rem, 2vh, 1.5rem);
     margin-left: 0;
+    padding: var(--standalone-padding-y) clamp(.75rem, 3vw, 2rem);
+  }
+  .main.is-viewport-fit {
     min-height: 0;
     height: 100vh;
     height: 100dvh;
-    height: var(--preview-viewport-height, 100vh);
-    padding: clamp(.5rem, 2vh, 1.5rem) clamp(.75rem, 3vw, 2rem);
+    height: var(--studio-viewport-height, 100vh);
     overflow: auto;
   }
 </style>

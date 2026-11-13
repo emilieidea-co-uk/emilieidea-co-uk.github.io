@@ -6,6 +6,7 @@ export type Pattern = 'rows' | 'crosshatch' | 'petals';
 export interface SampledShape { contours: Point[][]; filled: boolean }
 export interface StitchOptions {
   length: number; gap: number; spacing: number; angle: number; pattern: Pattern; outline: boolean;
+  fill?: boolean;
 }
 export const MAX_STITCHES = 12000;
 const EPSILON = 1e-7;
@@ -122,14 +123,14 @@ export function generateStitches(shapes: SampledShape[], options: StitchOptions,
     if (result.length + segments.length > MAX_STITCHES) throw new Error('Too many stitches. Increase pattern spacing or stitch length.');
     result.push(...segments.map(segment => ({ ...segment, kind })));
   };
-  const paths = shapes.some(shape => shape.filled) ? patternPaths(width, height, options) : [];
+  const paths = options.fill !== false && shapes.some(shape => shape.filled) ? patternPaths(width, height, options) : [];
   for (const shape of shapes) {
-    if (shape.filled) {
+    if (shape.filled && options.fill !== false) {
       for (const path of paths) {
         for (const stitch of runningStitches(path, options.length, options.gap)) add(clipSegment(stitch, shape.contours), 'fill');
       }
     }
-    if (!shape.filled || options.outline) {
+    if (options.outline) {
       for (const contour of shape.contours) add(runningStitches(contour, options.length, options.gap), 'outline');
     }
   }

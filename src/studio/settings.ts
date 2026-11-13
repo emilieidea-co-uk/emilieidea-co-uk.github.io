@@ -1,33 +1,26 @@
-import { studies } from './studies.ts';
-import type { Pattern } from './stitches';
+import { studies, initialStudy } from './studies.ts';
+import type { Study, StudyDefaults } from './studies';
+import { CONTROL_VALUES, PATTERNS } from './options.mjs';
 
-export interface StudySettings {
-  drawing: string; length: number; gap: number; lineWidth: number;
-  fillLineWidth: number; pattern: Pattern; spacing: number; angle: number;
-}
-export const DEFAULT_SETTINGS: StudySettings = {
-  drawing: 'petals', length: 6, gap: 4, lineWidth: 1.35,
-  fillLineWidth: .5, pattern: 'petals', spacing: 28, angle: 0,
-};
+export interface StudySettings extends StudyDefaults { drawing: string }
+export const defaultsForStudy = (study: Study): StudySettings => ({ drawing: study.id, ...study.defaults });
+export const DEFAULT_SETTINGS = defaultsForStudy(initialStudy);
 
 // Only settings offered by the editor are accepted, including on shared URLs.
 export function readSettings(search: string): StudySettings {
   const query = new URLSearchParams(search);
-  const number = (key: keyof StudySettings, choices: number[]) => {
+  const study = studies.find(study => study.id === query.get('drawing')) ?? initialStudy;
+  const defaults = defaultsForStudy(study);
+  const number = (key: keyof typeof CONTROL_VALUES) => {
     const value = Number(query.get(key));
-    return query.has(key) && choices.includes(value) ? value : DEFAULT_SETTINGS[key] as number;
+    return query.has(key) && CONTROL_VALUES[key].includes(value) ? value : defaults[key];
   };
-  const drawing = query.get('drawing') ?? '';
   const pattern = query.get('pattern') ?? '';
   return {
-    drawing: studies.some(study => study.id === drawing) ? drawing : DEFAULT_SETTINGS.drawing,
-    length: number('length', Array.from({ length: 13 }, (_, i) => i + 2)),
-    gap: number('gap', Array.from({ length: 12 }, (_, i) => i + 1)),
-    lineWidth: number('lineWidth', [.5, 1, 1.35, 2, 3, 4]),
-    fillLineWidth: number('fillLineWidth', [.5, 1, 1.35, 2, 3, 4]),
-    spacing: number('spacing', [12, 18, 24, 28, 36, 48]),
-    angle: number('angle', [0, 15, 30, 45, 60, 90]),
-    pattern: ['rows', 'crosshatch', 'petals'].includes(pattern) ? pattern as Pattern : DEFAULT_SETTINGS.pattern,
+    drawing: study.id,
+    length: number('length'), gap: number('gap'), lineWidth: number('lineWidth'),
+    fillLineWidth: number('fillLineWidth'), spacing: number('spacing'), angle: number('angle'),
+    pattern: PATTERNS.includes(pattern) ? pattern as StudyDefaults['pattern'] : defaults.pattern,
   };
 }
 

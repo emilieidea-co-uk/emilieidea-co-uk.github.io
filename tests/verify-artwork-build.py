@@ -124,4 +124,14 @@ assert '<footer' not in preview_html and 'id="primary-nav"' not in preview_html
 assert 'class="sidebar"' not in preview_html
 assert 'id="primary-nav"' in (DIST / 'studio/index.html').read_text()
 assert '<footer' in (DIST / 'studio/index.html').read_text()
+editor_html = (DIST / 'studio/drawing-to-stitches/index.html').read_text()
+assert 'id="primary-nav"' not in editor_html and '<footer' not in editor_html
+assert 'study-instructions' not in editor_html and 'study-description' not in editor_html
+assert 'Loading the stitch preview' not in editor_html
+for definition in (ROOT / 'src/data/studio').glob('*.json'):
+    drawing = json.loads(definition.read_text())
+    assert f'value="{drawing["id"]}"' in editor_html
+    assert drawing['name'] in editor_html
+assert 'What to try' in editor_html and 'From the work' in editor_html
+
 print(f'Production checks passed: {count} image pages, {len(tag_names)} tag pages, grouped galleries and carousels, blog links, preview files, metadata, and sitemap.')

@@ -5,12 +5,10 @@ import { studies, studySvg } from './studies';
 export function initDrawingSelection(): void {
   const select = document.querySelector<HTMLSelectElement>('#study-drawing');
   const original = document.querySelector<HTMLElement>('#study-original');
-  const description = document.querySelector<HTMLElement>('#study-description');
-  if (!select || !original || !description) return;
+  if (!select || !original) return;
   const update = () => {
     const study = studies.find(study => study.id === select.value) ?? studies[0];
     original.innerHTML = studySvg(study);
-    description.textContent = study.description;
   };
   select.disabled = false;
   select.addEventListener('change', update);

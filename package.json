@@ -16,8 +16,8 @@
     "assign:ids": "node scripts/assign-artwork-ids.mjs",
     "test:artworks": "node --test tests/artwork-data.test.mjs tests/artwork-tags.test.mjs tests/gallery-masonry.test.mjs tests/lightbox.test.mjs tests/carousel.test.mjs && python3 tests/import-artwork-ids.test.py",
     "test:artwork-build": "python3 tests/verify-artwork-build.py",
-    "check:studio": "tsc -p tsconfig.studio.json",
-    "test:studio": "node --experimental-strip-types --test tests/studio.test.ts tests/studio-controls.test.mjs tests/studio-preview.test.mjs",
+    "check:studio": "node scripts/studio-catalog.mjs && tsc -p tsconfig.studio.json",
+    "test:studio": "node scripts/studio-catalog.mjs && node --experimental-strip-types --test tests/studio.test.ts tests/studio-catalog.test.mjs tests/studio-controls.test.mjs tests/studio-preview.test.mjs",
     "import:instagram": "node import_tool/import-instagram.mjs",
     "test:import": "node --test import_tool/tests/*.test.mjs"
   },
@@ -31,6 +31,7 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "svgo": "4.1.0",
     "typescript": "5.9.3"
   }
 }

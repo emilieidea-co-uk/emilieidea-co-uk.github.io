@@ -18,6 +18,8 @@ export function initArtworkCarousel(root) {
     tile.dataset.caption = slide.caption;
     tile.setAttribute('aria-label', `${slide.alt} — view larger`);
     image.srcset = slide.srcset;
+    image.width = slide.width;
+    image.height = slide.height;
     image.src = slide.src;
     image.alt = slide.alt;
     caption.textContent = slide.caption;

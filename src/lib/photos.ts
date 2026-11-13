@@ -11,7 +11,7 @@ import type { ImageMetadata } from 'astro';
 export const MAX_WEB = 3840;
 const WIDTHS = [640, 1080, 1600, 2048, 2560, 3840];
 
-// Responsive `sizes` for the 2-column 3:2 galleries. Desktop reserves the 300px
+// Responsive `sizes` for the 2-column galleries. Desktop reserves the 300px
 // sidebar; tablet and mobile are full width. This lets the browser fetch a
 // rendition matched to each tile — sharp where needed, lean elsewhere — instead
 // of over-fetching from a loose vw estimate.
@@ -33,6 +33,8 @@ export interface RenderedPhoto {
   src: string;
   srcset: string;
   full: string;
+  width: number;
+  height: number;
 }
 
 // Turn a filename into a readable caption: "01-snowy-harbor.jpg" -> "Snowy harbor".
@@ -61,5 +63,5 @@ export async function renderPhoto(src: ImageMetadata): Promise<RenderedPhoto> {
   const srcset = renditions.map((r) => `${r.src} ${r.attributes.width}w`).join(', ');
   const largest = renditions[renditions.length - 1];
 
-  return { src: largest.src, srcset, full: largest.src };
+  return { src: largest.src, srcset, full: largest.src, width: src.width, height: src.height };
 }

@@ -73,6 +73,8 @@ const jsonLd = {
               class="photo__img"
               src={photo.src}
               srcset={photo.srcset}
+              width={photo.width}
+              height={photo.height}
               sizes={GRID_SIZES}
               alt={photo.alt}
               loading={i < 4 ? 'eager' : 'lazy'}
@@ -93,6 +95,10 @@ const jsonLd = {
 </p>}
 
 <Lightbox />
+
+<script>
+  import '../lib/gallery-masonry.mjs';
+</script>
 
 <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 

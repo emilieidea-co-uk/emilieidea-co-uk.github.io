@@ -15,7 +15,7 @@ const selected = slides[index];
     <button class="photo-tile" type="button" aria-label={`${selected.alt} — view larger`}
       data-photo-group={JSON.stringify(slides)} data-photo-index={index}
       data-full={selected.full} data-artwork-url={selected.href} data-alt={selected.alt} data-caption={selected.caption}>
-      <img class="photo__img" src={selected.src} srcset={selected.srcset} sizes={POST_SIZES}
+      <img class="photo__img" src={selected.src} srcset={selected.srcset} sizes={POST_SIZES} width={selected.width} height={selected.height}
         alt={selected.alt} loading="eager" decoding="async" draggable="false" />
     </button>
     <div class="artwork-carousel__controls" hidden={slides.length < 2}>

@@ -186,7 +186,10 @@ for definition in (ROOT / 'src/data/studio').glob('*.json'):
 assert 'What to try' in editor_html and 'From the work' in editor_html
 assert 'value="fu" selected' in editor_html
 assert 'value="horse"' in editor_html
-assert editor_html.index('value="fu"') < editor_html.index('value="flower"') < editor_html.index('value="petals"') < editor_html.index('value="horse"')
+assert 'value="flower"' not in editor_html
+assert not (DIST / 'studio/drawing-to-stitches/preview/flower').exists()
+assert SITE + '/studio/drawing-to-stitches/preview/flower/' not in sitemap
+assert editor_html.index('value="fu"') < editor_html.index('value="lotus"') < editor_html.index('value="petals"') < editor_html.index('value="horse"')
 assert (DIST / 'studio/drawing-to-stitches/preview/horse/index.html').is_file()
 assert SITE + '/studio/drawing-to-stitches/preview/horse/' in sitemap
 

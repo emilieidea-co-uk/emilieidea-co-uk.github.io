@@ -98,15 +98,15 @@ publication settings. Blog-only images go in `src/assets/blog/` and omit
 The first tutorial is at `/studio/drawing-to-stitches/`. The three steps use
 TypeScript and native Canvas 2D: choose a drawing, stitch its outline, then add an open pattern fill.
 **Fu** is selected initially; **Prev** and **Next** preserve settings, and
-**Reset** starts again at Step 1 with Fu. Flower, Petal medallion and Horse are
-available in the drawing selector.
+**Reset** starts again at Step 1 with Fu. Lotus, Petal medallion and Horse are
+available in the drawing selector. Lotus uses outlines only and skips the fill step.
 Step 3's **Preview** button opens the stitch animation on a separate page;
 **Back to edit** restores all settings. Follow the
 [manual test checklist](doc/StudioStitchPlan.md) to review each step and preview.
 
 Drawings are JSON/SVG pairs in `src/data/studio/` and `src/assets/studio/`.
 Their names, defaults and available steps come from JSON. The optional `order`
-field controls the dropdown (Fu 1, Flower 2, Petal medallion 3, Horse 4); Fu remains
+field controls the dropdown (Fu 1, Lotus 2, Petal medallion 3, Horse 4); Fu remains
 the configured default independently of this order. Only SVG `<path>`
 elements are supported; new pairs are discovered automatically. See
 [adding a Studio drawing](doc/StudioStitchPlan.md#add-or-edit-a-drawing).
@@ -116,7 +116,7 @@ rendering and stitch geometry. No drawing library or submodule is required.
 
 Each drawing has a social sharing image generated automatically from its SVG,
 JSON defaults and outline/fill flags during the build. Sharing uses drawing-specific
-URLs such as `/studio/drawing-to-stitches/preview/flower/?length=6&gap=4…`.
+URLs such as `/studio/drawing-to-stitches/preview/lotus/?length=6&gap=4…`.
 Images appear only in sharing metadata; selected settings still control playback.
 Old `/preview/?drawing=…` links forward visitors to the matching drawing page.
 Old links retain a generic social card because their HTML is static; use the new

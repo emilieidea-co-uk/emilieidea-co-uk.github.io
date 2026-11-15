@@ -49,7 +49,7 @@ function setup(reduced = false, longFill = false, flags = { hasOutline: true, ha
     document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io', replace: url => replacements.push(url) }, matchMedia: () => media,
       addEventListener(name, callback) { events[name] = callback; } },
     WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition, stitchDistances, segmentPosition,
-    readSettings, settingsQuery, previewPath, lastStage, withBase: path => path, studies: [{ id: 'fu', name: 'Fu', ...flags }, { id: 'flower', name: 'Flower', ...flags }],
+    readSettings, settingsQuery, previewPath, lastStage, withBase: path => path, studies: [{ id: 'fu', name: 'Fu', ...flags }, { id: 'lotus', name: 'Lotus', ...flags }],
     sampleStudy: () => [], generateStitches: (_, options) => generated.filter(segment => segment.kind === 'fill' ? options.fill : options.outline),
     requestAnimationFrame(callback) { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame(id) { frames.delete(id); },
@@ -164,15 +164,18 @@ test('preview honors disabled steps and Back to edit targets the last available 
 
 
 test('drawing routes override conflicting query drawing and Share keeps the matching path', async () => {
-  const s = setup(true, false, { hasOutline: true, hasFill: true }, { drawing: 'flower' });
-  assert.match(s.nodes.description.textContent, /^Flower/);
+  const s = setup(true, false, { hasOutline: true, hasFill: false }, { drawing: 'lotus' });
+  assert.match(s.nodes.description.textContent, /^Lotus/);
+  assert.match(s.nodes.description.textContent, /outline build up/);
+  assert.equal(s.moves().length, 20, 'Lotus playback must contain only outline stitches');
+  assert.equal(new URL(s.nodes.back.href, 'https://example.com').searchParams.get('step'), '2');
   await s.nodes.share.listeners.click();
   const url = new URL(s.copied());
-  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/flower/');
-  assert.equal(url.searchParams.get('drawing'), 'flower');
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/lotus/');
+  assert.equal(url.searchParams.get('drawing'), 'lotus');
   assert.equal(url.searchParams.get('length'), '10');
   assert.equal(url.searchParams.get('angle'), '90');
-  assert.equal(new URL(s.nodes.back.href, url).searchParams.get('drawing'), 'flower');
+  assert.equal(new URL(s.nodes.back.href, url).searchParams.get('drawing'), 'lotus');
 });
 
 test('legacy query-only preview links forward to the drawing page with every selected setting', () => {

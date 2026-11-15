@@ -38,7 +38,7 @@ Each drawing is one JSON file in `src/data/studio/` and one SVG file in
 - Keep `id` permanent: existing shared links use it. Use a unique lowercase ID
   with letters, numbers and hyphens. `name` is the drawing selector label.
 - `order` controls the dropdown: lower positive integers appear first. Fu is 1,
-  Flower 2, Petal medallion 3 and Horse 4. Missing values appear last; equal orders use
+  Lotus 2, Petal medallion 3 and Horse 4. Missing values appear last; equal orders use
   name order. This does not change the configured default or shared-link IDs.
 - `source` is the SVG filename, without a directory path.
 - Optional `originalPost` is the local artwork path, for example
@@ -91,7 +91,7 @@ files produce an error naming the drawing rather than silently dropping it.
 
 ## Step 1 — choose a drawing
 
-Fu is selected by default; Flower, Petal medallion and Horse are also available. Only the drawing and its
+Fu is selected by default; Lotus, Petal medallion and Horse are also available. Only the drawing and its
 selector appear: no stitch preview or stitch controls yet. Filled areas are
 neutral grey. Next advances to the outline; Prev is disabled at the beginning.
 
@@ -107,7 +107,8 @@ Fu's holes and the medallion's centre stay open. Prev returns to the drawing; Ne
 
 ## Step 3 — add a pattern fill
 
-Try Rows, Crosshatch and Petals on all drawings. Change Pattern spacing and
+Try Rows, Crosshatch and Petals on drawings with fill enabled. Lotus skips this
+step and opens Preview directly after its outline. Change Pattern spacing and
 Direction. Fill stitches are grey, outlines are darker, and holes stay empty.
 The outline from Step 2 remains visible; there is no outline selector in Step 3.
 Only Pattern, Pattern spacing, Direction and Fill line width appear in Step 3.
@@ -232,3 +233,16 @@ separate open outline details. The viewBox is fitted around all seven paths
 with 5% padding, using the same preparation as Fu. Horse has list order 4 and
 both outline and fill enabled. Its `originalPost` points to
 `/artwork/instagram-CxkrkqzMl4Y-01/`.
+
+## Lotus source drawing
+
+Lotus replaces Flower as drawing ID `lotus`, order 2. The previous Flower ID
+and preview route are retired. Its supplied SVG has 23 unfilled paths, including
+the three round details already converted to paths. All original `d` geometry
+and open/closed contours are preserved; editor metadata, groups and styles are
+removed. The viewBox is fitted with the same 5% padding as Fu and Horse.
+
+`hasOutline` is true and `hasFill` is false: Lotus has two steps, drawing and
+outline. Preview follows Step 2 directly, Back to edit returns there, and neither
+the animation nor its sharing image adds fill. Its original post is
+`/artwork/instagram-Bj-q5OPhjqt-01/`. Fu remains the default and Reset selection.

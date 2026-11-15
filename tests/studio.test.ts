@@ -23,7 +23,7 @@ test('distance playback interpolates short and long stitches without counting ju
 });
 
 test('preview URL settings round-trip and reject unsupported or excessive values', () => {
-  const selected = { ...DEFAULT_SETTINGS, drawing: 'flower', pattern: 'crosshatch' as const, lineWidth: 3, fillLineWidth: .5, spacing: 48, angle: 90 };
+  const selected = { ...DEFAULT_SETTINGS, drawing: 'lotus', pattern: 'crosshatch' as const, lineWidth: 3, fillLineWidth: .5, spacing: 48, angle: 90 };
   assert.deepEqual(readSettings(settingsQuery(selected)), selected);
   assert.deepEqual(readSettings('drawing=unknown&pattern=bad&length=99999&gap=0&lineWidth=NaN&fillLineWidth=-5&spacing=1&angle=999'), DEFAULT_SETTINGS);
   assert.deepEqual(readSettings(''), DEFAULT_SETTINGS);
@@ -95,15 +95,15 @@ test('SVG downloads contain independent visible stitches, and playback clamps to
 
 
 test('shared URL overrides use the selected drawing defaults for every omitted setting', () => {
-  const flower = studies.find(study => study.id === 'flower')!;
-  const saved = flower.defaults;
+  const lotus = studies.find(study => study.id === 'lotus')!;
+  const saved = lotus.defaults;
   try {
-    flower.defaults = { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 };
-    assert.deepEqual(readSettings('drawing=flower'), defaultsForStudy(flower));
-    assert.deepEqual(readSettings('drawing=flower&length=8&pattern=crosshatch'), {
-      ...defaultsForStudy(flower), length: 8, pattern: 'crosshatch',
+    lotus.defaults = { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 };
+    assert.deepEqual(readSettings('drawing=lotus'), defaultsForStudy(lotus));
+    assert.deepEqual(readSettings('drawing=lotus&length=8&pattern=crosshatch'), {
+      ...defaultsForStudy(lotus), length: 8, pattern: 'crosshatch',
     });
-  } finally { flower.defaults = saved; }
+  } finally { lotus.defaults = saved; }
 });
 
 test('outline and fill flags independently control stitch generation', () => {
@@ -133,7 +133,7 @@ test('Fu is the initial drawing and fallback, with two filled regions and a sepa
   assert.equal(readSettings('').drawing, 'fu');
   assert.equal(readSettings('drawing=missing').drawing, 'fu');
   assert.equal(readSettings('drawing=horse').drawing, 'horse');
-  for (const id of ['petals', 'flower']) assert.equal(readSettings(`drawing=${id}`).drawing, id);
+  for (const id of ['petals', 'lotus']) assert.equal(readSettings(`drawing=${id}`).drawing, id);
   assert.deepEqual(initialStudy.shapes.map(shape => shape.filled), [true, true, false]);
   assert.deepEqual(initialStudy.shapes.map(shape => shape.contours.length), [1, 5, 1]);
   assert.equal(initialStudy.hasOutline, true);
@@ -153,4 +153,19 @@ test('the supplied Horse has one filled silhouette and six separate unfilled det
   assert.ok(horse.shapes.slice(1).every(shape => !/[Zz]$/.test(shape.contours[0])), 'detail paths must stay open');
   assert.ok(horse.viewBox[3] < 90, 'the inherited Fu viewBox must be fitted to the horse');
   assert.equal(initialStudy.id, 'fu');
+});
+
+
+test('Lotus preserves 23 unfilled paths, including five closed contours, and retires Flower', () => {
+  const lotus = studies.find(study => study.id === 'lotus')!;
+  assert.equal(lotus.order, 2);
+  assert.equal(lotus.hasOutline, true);
+  assert.equal(lotus.hasFill, false);
+  assert.equal(lotus.shapes.length, 23);
+  assert.ok(lotus.shapes.every(shape => !shape.filled && shape.contours.length === 1));
+  assert.equal(lotus.shapes.filter(shape => /[Zz]$/.test(shape.contours[0])).length, 5);
+  assert.equal(lotus.originalPost, '/artwork/instagram-Bj-q5OPhjqt-01/');
+  assert.ok(lotus.viewBox[3] < 110, 'the viewBox should fit Lotus rather than retain Fu framing');
+  assert.equal(studies.some(study => study.id === 'flower'), false);
+  assert.equal(readSettings('drawing=flower').drawing, 'fu');
 });

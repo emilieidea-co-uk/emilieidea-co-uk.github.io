@@ -1,10 +1,10 @@
 {
-  "id": "flower",
-  "name": "Flower",
+  "id": "lotus",
+  "name": "Lotus",
   "order": 2,
   "hasOutline": true,
-  "hasFill": true,
-  "source": "flower.svg",
+  "hasFill": false,
+  "source": "lotus.svg",
   "defaults": {
     "length": 6,
     "gap": 4,
@@ -13,5 +13,6 @@
     "pattern": "petals",
     "spacing": 28,
     "angle": 0
-  }
+  },
+  "originalPost": "/artwork/instagram-Bj-q5OPhjqt-01/"
 }

@@ -121,5 +121,5 @@ test('drawing order sorts numerically, with names for ties and unordered drawing
   ];
   assert.deepEqual(drawings.sort(compareStudies).map(drawing => drawing.id), ['first-a', 'first-b', 'two', 'ten', 'a', 'z']);
   const catalog = loadStudioCatalog();
-  assert.deepEqual(catalog.map(drawing => [drawing.id, drawing.order]), [['fu', 1], ['flower', 2], ['petals', 3], ['horse', 4]]);
+  assert.deepEqual(catalog.map(drawing => [drawing.id, drawing.order]), [['fu', 1], ['lotus', 2], ['petals', 3], ['horse', 4]]);
 });

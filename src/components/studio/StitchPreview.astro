@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { withBase } from '../../lib/urls';
 import { initialStudy } from '../../studio/studies';
+import { originalPostForStudy } from '../../studio/reference';
 import type { Study } from '../../studio/studies';
 interface Props { study?: Study; legacy?: boolean }
 const { study = initialStudy, legacy = false } = Astro.props;
@@ -27,7 +28,7 @@ const description = `${study.name}: watch a drawing become a hand-stitch pattern
       <canvas data-drawing={legacy ? undefined : study.id} data-legacy={legacy ? "true" : undefined} id="preview-canvas" width="600" height="440" role="img" aria-label="Animated hand-stitch study" aria-describedby="preview-status"></canvas>
       <figcaption id="preview-status" role="status" aria-live="polite">Preparing the stitch animation…</figcaption>
     </figure>
-    <p class="preview-original"><a href={withBase('/artwork/instagram-CWO3doINYa7-01/')}>View original post →</a></p>
+    <p class="preview-original"><a href={withBase(originalPostForStudy(study))}>View original post →</a></p>
     <noscript><p>Turn on JavaScript to watch the stitch animation.</p></noscript>
   </article>
 </Layout>

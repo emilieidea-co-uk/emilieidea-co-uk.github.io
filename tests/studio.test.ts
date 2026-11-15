@@ -132,12 +132,25 @@ test('Fu is the initial drawing and fallback, with two filled regions and a sepa
   assert.equal(DEFAULT_SETTINGS.drawing, 'fu');
   assert.equal(readSettings('').drawing, 'fu');
   assert.equal(readSettings('drawing=missing').drawing, 'fu');
-  assert.equal(readSettings('drawing=horse').drawing, 'fu');
+  assert.equal(readSettings('drawing=horse').drawing, 'horse');
   for (const id of ['petals', 'flower']) assert.equal(readSettings(`drawing=${id}`).drawing, id);
-  assert.ok(!studies.some(study => study.id === 'horse'));
   assert.deepEqual(initialStudy.shapes.map(shape => shape.filled), [true, true, false]);
   assert.deepEqual(initialStudy.shapes.map(shape => shape.contours.length), [1, 5, 1]);
   assert.equal(initialStudy.hasOutline, true);
   assert.equal(initialStudy.hasFill, true);
   assert.ok(initialStudy.viewBox[2] < 140 && initialStudy.viewBox[3] < 150, 'Fu should be framed around its paths rather than the A4 page');
+});
+
+
+test('the supplied Horse has one filled silhouette and six separate unfilled details', () => {
+  const horse = studies.find(study => study.id === 'horse')!;
+  assert.equal(horse.order, 4);
+  assert.equal(horse.hasOutline, true);
+  assert.equal(horse.hasFill, true);
+  assert.deepEqual(horse.shapes.map(shape => shape.filled), [true, false, false, false, false, false, false]);
+  assert.ok(horse.shapes.every(shape => shape.contours.length === 1));
+  assert.match(horse.shapes[0].contours[0], /[Zz]$/);
+  assert.ok(horse.shapes.slice(1).every(shape => !/[Zz]$/.test(shape.contours[0])), 'detail paths must stay open');
+  assert.ok(horse.viewBox[3] < 90, 'the inherited Fu viewBox must be fitted to the horse');
+  assert.equal(initialStudy.id, 'fu');
 });

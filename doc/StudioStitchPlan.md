@@ -38,9 +38,14 @@ Each drawing is one JSON file in `src/data/studio/` and one SVG file in
 - Keep `id` permanent: existing shared links use it. Use a unique lowercase ID
   with letters, numbers and hyphens. `name` is the drawing selector label.
 - `order` controls the dropdown: lower positive integers appear first. Fu is 1,
-  Flower 2 and Petal medallion 3. Missing values appear last; equal orders use
+  Flower 2, Petal medallion 3 and Horse 4. Missing values appear last; equal orders use
   name order. This does not change the configured default or shared-link IDs.
 - `source` is the SVG filename, without a directory path.
+- Optional `originalPost` is the local artwork path, for example
+  `/artwork/instagram-CHIRT_tJey-jAFDwd1Dg3SvfPCh98VBL1w1fkA0-01/` for Fu.
+  Its preview links to this post; drawings without a reference use the same
+  default original post as the Studio landing page. That shared reference is
+  configured in `src/studio/reference.ts`.
 - `hasOutline: false` skips the outline step; `hasFill: false` skips the fill step.
   At least one must be true. Step numbers, Preview and Back to edit follow the
   available steps automatically.
@@ -86,7 +91,7 @@ files produce an error naming the drawing rather than silently dropping it.
 
 ## Step 1 — choose a drawing
 
-Fu is selected by default; Flower and Petal medallion are also available. Only the drawing and its
+Fu is selected by default; Flower, Petal medallion and Horse are also available. Only the drawing and its
 selector appear: no stitch preview or stitch controls yet. Filled areas are
 neutral grey. Next advances to the outline; Prev is disabled at the beginning.
 
@@ -216,5 +221,14 @@ remain holes. `path6` is an outline only. The viewBox is fitted around all three
 paths with padding equal to 5% of the longest dimension. Inkscape metadata,
 groups and styles have been removed for the path-only Studio format.
 
-Fu replaces Horse. Horse's source, definition and generated preview route are
-removed. Existing shared links for Flower and Petal medallion remain valid.
+Fu remains the default, including Reset. Existing shared links for other
+drawings retain their selected design.
+
+## Horse source drawing
+
+The supplied Horse drawing uses seven direct paths, preserving their original
+`d` geometry. `path1` is the filled silhouette; `path2` through `path7` are
+separate open outline details. The viewBox is fitted around all seven paths
+with 5% padding, using the same preparation as Fu. Horse has list order 4 and
+both outline and fill enabled. Its `originalPost` points to
+`/artwork/instagram-CxkrkqzMl4Y-01/`.

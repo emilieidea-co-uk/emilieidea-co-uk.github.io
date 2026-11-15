@@ -15,6 +15,7 @@ const svg = content => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 20 
 test('definitions require stable IDs, usable steps, local SVGs and supported defaults', () => {
   assert.equal(validateDefinition(definition), definition);
   for (const change of [
+    { originalPost: 'https://example.com/' }, { originalPost: '/artwork/../bad/' },
     { order: 0 }, { order: -1 }, { order: 1.5 }, { order: '1' }, { order: null }, { order: Infinity },
     { id: 'Bad ID' }, { name: '' }, { hasOutline: 'true' }, { hasFill: false, hasOutline: false },
     { source: '../outside.svg' }, { defaults: { ...definition.defaults, length: 100 } },
@@ -120,5 +121,5 @@ test('drawing order sorts numerically, with names for ties and unordered drawing
   ];
   assert.deepEqual(drawings.sort(compareStudies).map(drawing => drawing.id), ['first-a', 'first-b', 'two', 'ten', 'a', 'z']);
   const catalog = loadStudioCatalog();
-  assert.deepEqual(catalog.map(drawing => [drawing.id, drawing.order]), [['fu', 1], ['flower', 2], ['petals', 3]]);
+  assert.deepEqual(catalog.map(drawing => [drawing.id, drawing.order]), [['fu', 1], ['flower', 2], ['petals', 3], ['horse', 4]]);
 });

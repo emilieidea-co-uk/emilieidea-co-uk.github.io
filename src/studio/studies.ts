@@ -8,7 +8,7 @@ export interface StudyDefaults {
 }
 export interface StudyShape { contours: string[]; filled: boolean }
 export interface Study {
-  id: string; name: string; order?: number; hasOutline: boolean; hasFill: boolean; source: string;
+  id: string; name: string; order?: number; hasOutline: boolean; hasFill: boolean; source: string; originalPost?: string;
   defaults: StudyDefaults; viewBox: number[]; shapes: StudyShape[];
 }
 export const WIDTH = 600;

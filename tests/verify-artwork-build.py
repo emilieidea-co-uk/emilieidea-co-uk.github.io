@@ -117,7 +117,7 @@ preview_path = '/studio/drawing-to-stitches/preview/'
 assert SITE + preview_path in sitemap
 assert {'rel': 'canonical', 'href': SITE + preview_path} in studio_preview.links
 assert any(a.get('href') == '/studio/drawing-to-stitches/' for a in studio_preview.anchors)
-assert any(a.get('href') == '/artwork/instagram-CWO3doINYa7-01/' for a in studio_preview.anchors)
+assert any(a.get('href') == '/artwork/instagram-CHIRT_tJey-jAFDwd1Dg3SvfPCh98VBL1w1fkA0-01/' for a in studio_preview.anchors)
 assert studio_preview.headings == ['Stitch']
 assert studio_preview.meta['og:title'] == 'EmilieIdea - Stitch'
 assert studio_preview.meta['twitter:title'] == 'EmilieIdea - Stitch'
@@ -140,6 +140,8 @@ preview_html = (DIST / 'studio/drawing-to-stitches/preview/index.html').read_tex
 assert '<footer' not in preview_html and 'id="primary-nav"' not in preview_html
 assert 'class="sidebar"' not in preview_html
 assert 'data-legacy="true"' in preview_html
+default_original_post = '/artwork/instagram-CWO3doINYa7-01/'
+assert any(a.get('href') == default_original_post for a in Page(DIST / 'studio/index.html').anchors)
 share_files = set()
 share_contents = set()
 for definition in (ROOT / 'src/data/studio').glob('*.json'):
@@ -154,6 +156,9 @@ for definition in (ROOT / 'src/data/studio').glob('*.json'):
     assert page.meta['og:image:width'] == '1200' and page.meta['og:image:height'] == '630'
     assert drawing['name'] in page.meta['og:image:alt']
     assert drawing['name'] in page.meta['og:description']
+    original_post = drawing.get('originalPost') or default_original_post
+    assert any(a.get('href') == original_post for a in page.anchors)
+    assert (DIST / original_post.lstrip('/') / 'index.html').is_file()
     assert page.meta['og:image:alt'] == page.meta['twitter:image:alt']
     assert page.headings == ['Stitch'] and not page.images
     html = (DIST / path.lstrip('/') / 'index.html').read_text()
@@ -180,9 +185,9 @@ for definition in (ROOT / 'src/data/studio').glob('*.json'):
     assert drawing['name'] in editor_html
 assert 'What to try' in editor_html and 'From the work' in editor_html
 assert 'value="fu" selected' in editor_html
-assert 'value="horse"' not in editor_html
-assert editor_html.index('value="fu"') < editor_html.index('value="flower"') < editor_html.index('value="petals"')
-assert not (DIST / 'studio/drawing-to-stitches/preview/horse').exists()
-assert SITE + '/studio/drawing-to-stitches/preview/horse/' not in sitemap
+assert 'value="horse"' in editor_html
+assert editor_html.index('value="fu"') < editor_html.index('value="flower"') < editor_html.index('value="petals"') < editor_html.index('value="horse"')
+assert (DIST / 'studio/drawing-to-stitches/preview/horse/index.html').is_file()
+assert SITE + '/studio/drawing-to-stitches/preview/horse/' in sitemap
 
 print(f'Production checks passed: {count} image pages, {len(tag_names)} tag pages, grouped galleries and carousels, blog links, preview files, metadata, and sitemap.')

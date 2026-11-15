@@ -1,0 +1,18 @@
+{
+  "id": "horse",
+  "name": "Horse",
+  "order": 4,
+  "hasOutline": true,
+  "hasFill": true,
+  "source": "horse.svg",
+  "defaults": {
+    "length": 6,
+    "gap": 4,
+    "lineWidth": 1.35,
+    "fillLineWidth": 0.5,
+    "pattern": "petals",
+    "spacing": 28,
+    "angle": 0
+  },
+  "originalPost": "/artwork/instagram-CxkrkqzMl4Y-01/"
+}

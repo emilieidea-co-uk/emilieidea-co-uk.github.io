@@ -18,6 +18,7 @@ export function validateDefinition(value, label = 'drawing') {
   if (typeof value.hasOutline !== 'boolean' || typeof value.hasFill !== 'boolean') fail('hasOutline and hasFill must be booleans');
   if (!value.hasOutline && !value.hasFill) fail('enable hasOutline or hasFill');
   if (typeof value.source !== 'string' || !/^[\w-]+\.svg$/.test(value.source)) fail('source must be an SVG filename in src/assets/studio');
+  if (value.originalPost !== undefined && (typeof value.originalPost !== 'string' || !/^\/artwork\/[A-Za-z0-9_-]+\/$/.test(value.originalPost))) fail('originalPost must be a local /artwork/<id>/ path');
   if (!value.defaults || typeof value.defaults !== 'object') fail('defaults are required');
   for (const [key, allowed] of Object.entries(CONTROL_VALUES)) {
     if (!allowed.includes(value.defaults[key])) fail(`defaults.${key} must be one of ${allowed.join(', ')}`);

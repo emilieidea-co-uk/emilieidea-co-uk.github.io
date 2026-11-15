@@ -98,7 +98,7 @@ publication settings. Blog-only images go in `src/assets/blog/` and omit
 The first tutorial is at `/studio/drawing-to-stitches/`. The three steps use
 TypeScript and native Canvas 2D: choose a drawing, stitch its outline, then add an open pattern fill.
 **Fu** is selected initially; **Prev** and **Next** preserve settings, and
-**Reset** starts again at Step 1 with Fu. Flower and Petal medallion remain
+**Reset** starts again at Step 1 with Fu. Flower, Petal medallion and Horse are
 available in the drawing selector.
 Step 3's **Preview** button opens the stitch animation on a separate page;
 **Back to edit** restores all settings. Follow the
@@ -106,7 +106,7 @@ Step 3's **Preview** button opens the stitch animation on a separate page;
 
 Drawings are JSON/SVG pairs in `src/data/studio/` and `src/assets/studio/`.
 Their names, defaults and available steps come from JSON. The optional `order`
-field controls the dropdown (Fu 1, Flower 2, Petal medallion 3); Fu remains
+field controls the dropdown (Fu 1, Flower 2, Petal medallion 3, Horse 4); Fu remains
 the configured default independently of this order. Only SVG `<path>`
 elements are supported; new pairs are discovered automatically. See
 [adding a Studio drawing](doc/StudioStitchPlan.md#add-or-edit-a-drawing).

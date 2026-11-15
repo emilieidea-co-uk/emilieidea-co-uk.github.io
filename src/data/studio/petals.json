@@ -1,6 +1,7 @@
 {
   "id": "petals",
   "name": "Petal medallion",
+  "order": 3,
   "hasOutline": false,
   "hasFill": true,
   "source": "petals.svg",

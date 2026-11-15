@@ -1,6 +1,7 @@
 {
   "id": "flower",
   "name": "Flower",
+  "order": 2,
   "hasOutline": true,
   "hasFill": true,
   "source": "flower.svg",

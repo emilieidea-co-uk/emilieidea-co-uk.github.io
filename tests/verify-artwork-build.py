@@ -128,7 +128,8 @@ assert studio_preview.meta['twitter:card'] == 'summary_large_image'
 assert studio_preview.meta['og:image:width'] == '1200'
 assert studio_preview.meta['og:image:height'] == '630'
 assert studio_preview.meta['og:image:alt'] == studio_preview.meta['twitter:image:alt']
-assert 'petal medallion' in studio_preview.meta['og:image:alt'].lower()
+assert 'Fu' in studio_preview.meta['og:image:alt']
+assert share_image.path == '/studio/drawing-to-stitches/preview/fu/share.png'
 share_file = DIST / share_image.path.lstrip('/')
 assert share_file.suffix == '.png' and share_file.is_file()
 png = share_file.read_bytes()
@@ -178,5 +179,10 @@ for definition in (ROOT / 'src/data/studio').glob('*.json'):
     assert f'value="{drawing["id"]}"' in editor_html
     assert drawing['name'] in editor_html
 assert 'What to try' in editor_html and 'From the work' in editor_html
+assert 'value="fu" selected' in editor_html
+assert 'value="horse"' not in editor_html
+assert editor_html.index('value="fu"') < editor_html.index('value="flower"') < editor_html.index('value="petals"')
+assert not (DIST / 'studio/drawing-to-stitches/preview/horse').exists()
+assert SITE + '/studio/drawing-to-stitches/preview/horse/' not in sitemap
 
 print(f'Production checks passed: {count} image pages, {len(tag_names)} tag pages, grouped galleries and carousels, blog links, preview files, metadata, and sitemap.')

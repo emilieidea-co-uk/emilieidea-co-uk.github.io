@@ -1,8 +1,9 @@
-// Generate light/dark EI display logos from ei-<category>-source-<theme>.png.
+// Generate app icons from the final Artworks light/dark display logos.
 // Artworks supplies the favicons and Apple touch icon.
-// Run npm run gen:brand first to refresh the source images.
+// Run npm run gen:brand first to refresh the display logos.
 // The social share image is refreshed separately with --og-only.
 import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -12,18 +13,6 @@ const PUBLIC = join(__dirname, '..', 'public');
 
 const CREAM = '#fcfcfb'; // site light background (for the opaque iOS icon)
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
-
-// Preserve the existing displayed logo dimensions.
-const LONG_EDGE = 805;
-
-// Trim outer margins, then scale so the longest edge == LONG_EDGE.
-// Preserve white areas inside the artwork, including the monogram and text ring.
-async function trimAndScale(input) {
-  const trimmed = await sharp(input).trim().toBuffer();
-  const m = await sharp(trimmed).metadata();
-  const scale = LONG_EDGE / Math.max(m.width, m.height);
-  return sharp(trimmed).resize(Math.round(m.width * scale), Math.round(m.height * scale)).png().toBuffer();
-}
 
 // Center an image on a transparent square canvas of `size`, with `pad` px margin.
 async function squarePadded(input, size, pad) {
@@ -35,26 +24,10 @@ async function squarePadded(input, size, pad) {
     .toBuffer();
 }
 
-async function categoryLogos(category) {
-  // Both themes use the same dimensions to avoid layout shifts.
-  const lightLogo = await trimAndScale(join(ASSETS, `ei-${category}-source-light.png`));
-  const lm = await sharp(lightLogo).metadata();
-  await sharp(lightLogo).toFile(join(ASSETS, `ei-${category}-light.png`));
-
-  const darkTrimmed = await sharp(join(ASSETS, `ei-${category}-source-dark.png`)).trim().toBuffer();
-  const darkLogo = await sharp(darkTrimmed)
-    .resize(lm.width, lm.height, { fit: 'contain', background: TRANSPARENT })
-    .png()
-    .toBuffer();
-  await sharp(darkLogo).toFile(join(ASSETS, `ei-${category}-dark.png`));
-  return { lightLogo, darkLogo };
-}
-
 async function main() {
-  // Artworks is the main site brand; retain the other category display logos.
-  await categoryLogos('embroideries');
-  await categoryLogos('scrapingby');
-  const { lightLogo, darkLogo } = await categoryLogos('artworks');
+  // Artworks is the main site brand. Category logos are produced by gen:brand.
+  const lightLogo = await readFile(join(ASSETS, 'ei-artworks-light.png'));
+  const darkLogo = await readFile(join(ASSETS, 'ei-artworks-dark.png'));
 
   // 2) Theme-aware favicons (transparent, a little breathing room).
   await sharp(await squarePadded(lightLogo, 256, 14)).toFile(join(PUBLIC, 'favicon.png'));

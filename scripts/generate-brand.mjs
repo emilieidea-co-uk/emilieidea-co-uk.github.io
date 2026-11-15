@@ -1,6 +1,6 @@
-// Convert the supplied Emilie Idea logo into the two theme source PNGs.
+// Generate final light/dark category logos directly from the original artwork.
 // Keep the light artwork intact. Dark mode removes white and maps RGB to 225-x.
-// Run npm run gen:icons afterward to refresh displayed logos and app icons.
+// Intermediate artwork stays in memory. Run gen:icons afterward for app icons.
 import sharp from 'sharp';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -48,13 +48,30 @@ async function darkVariant(input) {
     .png().toBuffer();
 }
 
+// Match the existing final logos: trim outside margins and scale to 805px.
+// Both themes share dimensions, preserving white details in the light artwork.
+const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
+async function displayLogos(light) {
+  const trimmed = await sharp(light).trim().toBuffer();
+  const metadata = await sharp(trimmed).metadata();
+  const scale = 805 / Math.max(metadata.width, metadata.height);
+  const width = Math.round(metadata.width * scale);
+  const height = Math.round(metadata.height * scale);
+  const lightLogo = await sharp(trimmed).resize(width, height).png().toBuffer();
+  const darkTrimmed = await sharp(await darkVariant(light)).trim().toBuffer();
+  const darkLogo = await sharp(darkTrimmed)
+    .resize(width, height, { fit: 'contain', background: TRANSPARENT }).png().toBuffer();
+  return { lightLogo, darkLogo };
+}
+
 for (const [category, id] of [['Embroideries', 'embroideries'], ['ScrapingBy', 'scrapingby'], ['Artworks', 'artworks']]) {
-  // The original embroidery logo remains byte-for-byte faithful to the input.
+  // Retain the supplied lettering for the embroidery logo.
   const light = category === 'Embroideries' ? original : await sharp(Buffer.from(
     template.replace('{{SOURCE_IMAGE}}', sourceImage).replace('{{CATEGORY_LETTERS}}', await curvedLetters(category))
   )).png().toBuffer();
-  await sharp(light).toFile(join(ASSETS, `ei-${id}-source-light.png`));
-  await sharp(await darkVariant(light)).toFile(join(ASSETS, `ei-${id}-source-dark.png`));
-  console.log(`generated ${category} light and dark source logos`);
+  const { lightLogo, darkLogo } = await displayLogos(light);
+  await sharp(lightLogo).toFile(join(ASSETS, `ei-${id}-light.png`));
+  await sharp(darkLogo).toFile(join(ASSETS, `ei-${id}-dark.png`));
+  console.log(`generated ${category} light and dark display logos`);
 }
 console.log('Done. Now run: npm run gen:icons');

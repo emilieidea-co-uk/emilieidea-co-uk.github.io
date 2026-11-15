@@ -8,4 +8,14 @@ export const CONTROL_VALUES = {
   angle: [0, 15, 30, 45, 60, 90],
 };
 export const PATTERNS = ['petals', 'rows', 'crosshatch'];
-export const INITIAL_DRAWING = 'petals';
+export const INITIAL_DRAWING = 'fu';
+
+
+/**
+ * @param {{ id: string, name: string, order?: number }} a
+ * @param {{ id: string, name: string, order?: number }} b
+ */
+export function compareStudies(a, b) {
+  return (a.order ?? Infinity) - (b.order ?? Infinity)
+    || a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en');
+}

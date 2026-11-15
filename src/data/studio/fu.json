@@ -1,9 +1,10 @@
 {
-  "id": "horse",
-  "name": "Horse silhouette",
+  "id": "fu",
+  "name": "Fu",
+  "order": 1,
   "hasOutline": true,
   "hasFill": true,
-  "source": "horse.svg",
+  "source": "fu.svg",
   "defaults": {
     "length": 6,
     "gap": 4,

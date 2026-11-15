@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync, statSy
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { optimize } from 'svgo';
-import { CONTROL_VALUES, PATTERNS, INITIAL_DRAWING } from '../src/studio/options.mjs';
+import { CONTROL_VALUES, PATTERNS, compareStudies } from '../src/studio/options.mjs';
 
 export const studioRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const studioDefinitions = join(studioRoot, 'src/data/studio');
@@ -14,6 +14,7 @@ export function validateDefinition(value, label = 'drawing') {
   if (!value || typeof value !== 'object') fail('expected a JSON object');
   if (typeof value.id !== 'string' || !/^[a-z][a-z0-9-]*$/.test(value.id)) fail('id must use lowercase letters, numbers and hyphens');
   if (typeof value.name !== 'string' || !value.name.trim()) fail('name is required');
+  if (value.order !== undefined && (!Number.isSafeInteger(value.order) || value.order < 1)) fail('order must be a positive integer');
   if (typeof value.hasOutline !== 'boolean' || typeof value.hasFill !== 'boolean') fail('hasOutline and hasFill must be booleans');
   if (!value.hasOutline && !value.hasFill) fail('enable hasOutline or hasFill');
   if (typeof value.source !== 'string' || !/^[\w-]+\.svg$/.test(value.source)) fail('source must be an SVG filename in src/assets/studio');
@@ -89,8 +90,8 @@ export function loadStudioCatalog(definitions = studioDefinitions, assets = stud
     return { ...definition, ...parsed };
   });
   if (!catalog.length) throw new Error('Studio requires at least one drawing definition');
-  // Keep the original medallion as the initial drawing, followed by names alphabetically.
-  return catalog.sort((a, b) => a.id === INITIAL_DRAWING ? -1 : b.id === INITIAL_DRAWING ? 1 : a.name.localeCompare(b.name, 'en'));
+  // JSON order controls the list; default selection is resolved separately.
+  return catalog.sort(compareStudies);
 }
 
 export function generateStudioCatalog(definitions = studioDefinitions, assets = studioAssets, output = studioOutput) {

@@ -17,11 +17,12 @@ Each drawing is one JSON file in `src/data/studio/` and one SVG file in
 
 ```json
 {
-  "id": "petals",
-  "name": "Petal medallion",
+  "id": "fu",
+  "name": "Fu",
+  "order": 1,
   "hasOutline": true,
   "hasFill": true,
-  "source": "petals.svg",
+  "source": "fu.svg",
   "defaults": {
     "length": 6,
     "gap": 4,
@@ -36,13 +37,19 @@ Each drawing is one JSON file in `src/data/studio/` and one SVG file in
 
 - Keep `id` permanent: existing shared links use it. Use a unique lowercase ID
   with letters, numbers and hyphens. `name` is the drawing selector label.
+- `order` controls the dropdown: lower positive integers appear first. Fu is 1,
+  Flower 2 and Petal medallion 3. Missing values appear last; equal orders use
+  name order. This does not change the configured default or shared-link IDs.
 - `source` is the SVG filename, without a directory path.
 - `hasOutline: false` skips the outline step; `hasFill: false` skips the fill step.
   At least one must be true. Step numbers, Preview and Back to edit follow the
   available steps automatically.
 - Selecting a different drawing applies that drawing's `defaults`. Prev/Next keep
-  edits. Reset selects Petal medallion and its defaults again. If it is removed,
-  the first drawing alphabetically is used instead.
+  edits. Reset selects Fu and its defaults again. If it is removed,
+  the first drawing in list order is used instead.
+- Set `INITIAL_DRAWING` in `src/studio/options.mjs` to choose the initial drawing.
+  Missing or invalid drawing parameters also fall back to this drawing. Valid
+  shared links keep their selected drawing.
 - Shared URL parameters override the selected drawing's defaults. Omitted or
   invalid parameters use its defaults. Existing parameter names remain valid.
 
@@ -79,7 +86,7 @@ files produce an error naming the drawing rather than silently dropping it.
 
 ## Step 1 — choose a drawing
 
-Choose Petal medallion, Flower or Horse silhouette. Only the drawing and its
+Fu is selected by default; Flower and Petal medallion are also available. Only the drawing and its
 selector appear: no stitch preview or stitch controls yet. Filled areas are
 neutral grey. Next advances to the outline; Prev is disabled at the beginning.
 
@@ -91,7 +98,7 @@ Use Prev to return to Step 1 if you want to change it.
 Try the Stitch length, Gap between stitches and Line width dropdowns. Larger
 lengths make longer marks, larger gaps leave more empty space, and larger widths
 make thicker lines. Separate paths should never gain connecting lines. The
-medallion's centre stays open. Prev returns to the drawing; Next opens fill.
+Fu's holes and the medallion's centre stay open. Prev returns to the drawing; Next opens fill.
 
 ## Step 3 — add a pattern fill
 
@@ -138,7 +145,7 @@ Prev returns to the outline while keeping settings. The Next button becomes
 
 ## Start again and device checks
 
-Reset from any step returns to Step 1 with the medallion, length 6, gap 4, width
+Reset from any step returns to Step 1 with Fu, length 6, gap 4, width
 1.35, fill width 0.5, Petals, spacing 28 and direction 0°. Try going backwards and
 forwards to confirm settings are preserved until Reset. Check keyboard control,
 both themes, phone layout and Safari 15. Numbers are relative drawing units, not
@@ -147,8 +154,8 @@ millimetres or textile recommendations.
 ## Later exercises — pending manual review
 
 Complete-design SVG/PNG downloads remain a later exercise. Use the same segment
-data and line widths for preview and export. No DST or machine files. The
-separate fabric-horse simulation remains a future tutorial.
+data and line widths for preview and export. No DST or machine files. A separate
+fabric simulation remains a future tutorial.
 
 ## Code and dependencies
 
@@ -200,3 +207,14 @@ get the drawing-specific card. No external image service is needed.
 
 Use `npm run gen:studio-share` to inspect cards in `.astro/studio/share/`.
 Production PNGs are emitted automatically at each drawing page's `share.png` URL.
+
+## Fu source drawing
+
+`fu.svg` uses the three supplied paths with their original `d` geometry intact.
+`path1` and `path2` receive fill patterns; the four inner contours of `path2`
+remain holes. `path6` is an outline only. The viewBox is fitted around all three
+paths with padding equal to 5% of the longest dimension. Inkscape metadata,
+groups and styles have been removed for the path-only Studio format.
+
+Fu replaces Horse. Horse's source, definition and generated preview route are
+removed. Existing shared links for Flower and Petal medallion remain valid.

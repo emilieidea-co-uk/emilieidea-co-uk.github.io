@@ -16,7 +16,7 @@ const code = compile(await readFile(new URL('../src/studio/render-canvas.ts', im
   compile(await readFile(new URL('../src/studio/clipboard.ts', import.meta.url), 'utf8')) +
   compile(await readFile(new URL('../src/studio/preview.ts', import.meta.url), 'utf8'));
 
-function setup(reduced = false, longFill = false, flags = { hasOutline: true, hasFill: true }, dataset = { drawing: 'horse' }) {
+function setup(reduced = false, longFill = false, flags = { hasOutline: true, hasFill: true }, dataset = { drawing: 'fu' }) {
   const events = {}, mediaEvents = {}, viewportEvents = {}, viewportStyles = {}, frames = new Map();
   let frameId = 0, moves = [], copied = '';
   const context = { setTransform() {}, fillRect() { moves = []; }, beginPath() {}, stroke() {},
@@ -42,14 +42,14 @@ function setup(reduced = false, longFill = false, flags = { hasOutline: true, ha
   const generated = Array.from({ length: 100 }, (_, i) => ({
     kind: i < 80 ? 'fill' : 'outline', from: { x: i, y: 0 }, to: { x: i + (longFill && i < 80 ? 4 : 1), y: 0 },
   }));
-  const query = 'drawing=horse&length=10&gap=6&lineWidth=3&fillLineWidth=0.5&pattern=rows&spacing=48&angle=90';
+  const query = 'drawing=fu&length=10&gap=6&lineWidth=3&fillLineWidth=0.5&pattern=rows&spacing=48&angle=90';
   const navigator = { clipboard: { writeText: async url => { copied = url; } } };
   const viewport = { height: 780, addEventListener(name, callback) { viewportEvents[name] = callback; } };
   runInNewContext(code + '\ninitStitchPreview();', {
     document, navigator, URL, window: { devicePixelRatio: 2, innerHeight: 900, visualViewport: viewport, location: { search: query, origin: 'https://emilieidea-co-uk.github.io', replace: url => replacements.push(url) }, matchMedia: () => media,
       addEventListener(name, callback) { events[name] = callback; } },
     WIDTH: 600, HEIGHT: 440, FILL_COLOR, OUTLINE_COLOR, playbackPosition, stitchDistances, segmentPosition,
-    readSettings, settingsQuery, previewPath, lastStage, withBase: path => path, studies: [{ id: 'horse', name: 'Horse', ...flags }, { id: 'flower', name: 'Flower', ...flags }],
+    readSettings, settingsQuery, previewPath, lastStage, withBase: path => path, studies: [{ id: 'fu', name: 'Fu', ...flags }, { id: 'flower', name: 'Flower', ...flags }],
     sampleStudy: () => [], generateStitches: (_, options) => generated.filter(segment => segment.kind === 'fill' ? options.fill : options.outline),
     requestAnimationFrame(callback) { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame(id) { frames.delete(id); },
@@ -80,7 +80,7 @@ test('preview animates slowly, outline before fill, pauses and returns complete 
   assert.equal(s.frames.size, 0);
   const back = new URL(s.nodes.back.href, 'https://example.com');
   assert.equal(back.searchParams.get('step'), '3');
-  assert.equal(back.searchParams.get('drawing'), 'horse');
+  assert.equal(back.searchParams.get('drawing'), 'fu');
   assert.equal(back.searchParams.get('length'), '10');
   assert.equal(back.searchParams.get('lineWidth'), '3');
   assert.equal(back.searchParams.get('fillLineWidth'), '0.5');
@@ -132,9 +132,9 @@ test('Share copies every setting with confirmation, including through a hidden c
   assert.equal(s.nodes['share-status'].textContent, 'Link copied');
   const url = new URL(s.copied());
   assert.equal(url.origin, 'https://emilieidea-co-uk.github.io');
-  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/horse/');
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/fu/');
   assert.deepEqual(readSettings(url.search), {
-    drawing: 'horse', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
+    drawing: 'fu', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
     pattern: 'rows', spacing: 48, angle: 90,
   });
   s.navigator.clipboard.writeText = async () => { throw new Error('Clipboard unavailable'); };
@@ -179,9 +179,9 @@ test('legacy query-only preview links forward to the drawing page with every sel
   const s = setup(false, false, { hasOutline: true, hasFill: true }, { legacy: 'true' });
   assert.equal(s.replacements.length, 1);
   const url = new URL(s.replacements[0], 'https://example.com');
-  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/horse/');
+  assert.equal(url.pathname, '/studio/drawing-to-stitches/preview/fu/');
   assert.deepEqual(readSettings(url.search), {
-    drawing: 'horse', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
+    drawing: 'fu', length: 10, gap: 6, lineWidth: 3, fillLineWidth: .5,
     pattern: 'rows', spacing: 48, angle: 90,
   });
   assert.equal(s.frames.size, 0, 'legacy page should forward before starting playback');

@@ -6,6 +6,7 @@ import ts from 'typescript';
 import { readSettings, settingsQuery, previewPath, defaultsForStudy, DEFAULT_SETTINGS } from '../src/studio/settings.ts';
 
 import { studies as catalogStudies, initialStudy as catalogInitialStudy } from '../src/studio/studies.ts';
+import { compareStudies } from '../src/studio/options.mjs';
 import { availableStages, lastStage, stageTitle } from '../src/studio/navigation.ts';
 
 // Navigation fixtures stay independent of the artist's current JSON flags.
@@ -32,16 +33,16 @@ test('Step 1 drawing selection works independently of the stitch renderer', asyn
   const elements = { '#study-drawing': select, '#study-original': original };
   runInNewContext(code + '\ninitDrawingSelection();', {
     document: { querySelector: selector => elements[selector] },
-    studies: [{ id: 'petals', description: 'Petals drawing' }, { id: 'horse', description: 'Horse drawing' }],
+    studies: [{ id: 'petals', description: 'Petals drawing' }, { id: 'flower', description: 'Flower drawing' }],
     studySvg: study => `<svg>${study.id}</svg>`,
   });
   assert.equal(select.disabled, false);
-  select.value = 'horse'; select.change();
-  assert.equal(original.innerHTML, '<svg>horse</svg>');
+  select.value = 'flower'; select.change();
+  assert.equal(original.innerHTML, '<svg>flower</svg>');
 });
 
 function setup(fixtures = studies) {
-  const defaults = { drawing: 'petals', length: '6', gap: '4', 'line-width': '1.35', 'fill-line-width': '0.5', pattern: 'petals', spacing: '28', angle: '0' };
+  const defaults = { drawing: initialStudy.id, length: '6', gap: '4', 'line-width': '1.35', 'fill-line-width': '0.5', pattern: 'petals', spacing: '28', angle: '0' };
   const names = ['canvas', ...Object.keys(defaults), 'drawing-control', 'drawing-preview', 'prev', 'next', 'reset', 'original', 'status', 'stage', 'pattern-controls', 'controls', 'stitch-preview'];
   const nodes = Object.fromEntries(names.map(name => [name, {
     value: defaults[name] ?? '', disabled: true, hidden: ['pattern-controls', 'stitch-preview'].includes(name), listeners: {}, classList: { toggle() {} },
@@ -89,7 +90,7 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   assert.equal(nodes.status.hidden, true);
   assert.equal(nodes.status.textContent, '');
   assert.equal(nodes['stitch-preview'].hidden, true);
-  nodes.drawing.value = 'horse'; nodes.drawing.listeners.change(); flush(); nodes.length.value = '10'; nodes['line-width'].value = '3';
+  nodes.drawing.value = 'flower'; nodes.drawing.listeners.change(); flush(); nodes.length.value = '10'; nodes['line-width'].value = '3';
   nodes.next.listeners.click(); flush();
   assert.equal(nodes.stage.textContent, 'Step 2 of 3 · Stitch the outline');
   assert.equal(nodes.controls.hidden, false);
@@ -112,7 +113,7 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   assert.equal(nodes.next.disabled, false);
   assert.equal(nodes.next.textContent, 'Preview');
   assert.equal(nodes.prev.disabled, false);
-  assert.equal(nodes.drawing.value, 'horse');
+  assert.equal(nodes.drawing.value, 'flower');
   assert.equal(calls.at(-1).options.length, 10);
   assert.equal(calls.at(-1).shapes[0].filled, true);
   assert.equal(calls.at(-1).shapes[1].filled, false);
@@ -134,7 +135,7 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   assert.equal(nodes.stage.textContent, 'Step 2 of 3 · Stitch the outline');
   assert.equal(nodes.controls.hidden, false);
   assert.ok(settings.every(setting => !setting.hidden));
-  assert.equal(nodes.drawing.value, 'horse');
+  assert.equal(nodes.drawing.value, 'flower');
   assert.equal(nodes.length.value, '10');
   assert.equal(nodes.pattern.value, 'crosshatch');
   assert.equal(nodes.prev.disabled, false);
@@ -147,8 +148,8 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   nodes.next.listeners.click();
   assert.equal(navigations.length, 1);
   const destination = new URL(navigations[0], 'https://example.com');
-  assert.equal(destination.pathname, '/studio/drawing-to-stitches/preview/horse/');
-  assert.equal(destination.searchParams.get('drawing'), 'horse');
+  assert.equal(destination.pathname, '/studio/drawing-to-stitches/preview/flower/');
+  assert.equal(destination.searchParams.get('drawing'), 'flower');
   assert.equal(destination.searchParams.get('fillLineWidth'), '2');
   assert.equal(destination.searchParams.get('lineWidth'), '3');
   const count = calls.length;
@@ -172,7 +173,7 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
   context.start(); flush();
   assert.equal(nodes.stage.textContent, 'Step 3 of 3 · Add a pattern fill');
   assert.equal(nodes.next.textContent, 'Preview');
-  assert.equal(nodes.drawing.value, 'horse');
+  assert.equal(nodes.drawing.value, 'flower');
   assert.equal(nodes['fill-line-width'].value, '2');
   assert.equal(nodes['line-width'].value, '3');
   assert.equal(nodes['pattern-controls'].hidden, false);
@@ -181,10 +182,10 @@ test('Prev and Next follow drawing, outline and fill steps; Reset restores all d
 
 test('drawing selection applies its own defaults and flag-driven navigation skips unavailable steps', () => {
   for (const hasFill of [false, true]) {
-    const horse = { ...studies.find(study => study.id === 'horse'), hasFill, hasOutline: !hasFill,
+    const flower = { ...studies.find(study => study.id === 'flower'), hasFill, hasOutline: !hasFill,
       defaults: { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 } };
-    const { nodes, calls, flush, navigations } = setup([initialStudy, horse]);
-    nodes.drawing.value = 'horse'; nodes.drawing.listeners.change(); flush();
+    const { nodes, calls, flush, navigations } = setup([initialStudy, flower]);
+    nodes.drawing.value = 'flower'; nodes.drawing.listeners.change(); flush();
     assert.equal(nodes.stage.textContent, 'Step 1 of 2 · Choose a drawing');
     assert.equal(nodes.length.value, '10');
     assert.equal(nodes.pattern.value, 'rows');
@@ -199,7 +200,7 @@ test('drawing selection applies its own defaults and flag-driven navigation skip
     assert.equal(nodes.stage.textContent, 'Step 1 of 2 · Choose a drawing');
     nodes.next.listeners.click(); flush();
     nodes.next.listeners.click();
-    assert.equal(new URL(navigations[0], 'https://example.com').searchParams.get('drawing'), 'horse');
+    assert.equal(new URL(navigations[0], 'https://example.com').searchParams.get('drawing'), 'flower');
     nodes.reset.listeners.click(); flush();
     assert.equal(nodes.drawing.value, initialStudy.id);
     assert.equal(nodes.stage.textContent, 'Step 1 of 3 · Choose a drawing');
@@ -231,4 +232,27 @@ test('sampling centers a non-zero SVG viewBox without joining distinct contours'
   close(top.at(-1).x, 520); close(top.at(-1).y, 0);
   close(bottom[0].x, 80); close(bottom[0].y, 440);
   close(bottom.at(-1).x, 520); close(bottom.at(-1).y, 440);
+});
+
+
+test('Fu remains first and selected even when generated data retains the old Petal-first order', async () => {
+  const source = await readFile(new URL('../src/studio/studies.ts', import.meta.url), 'utf8');
+  const code = ts.transpileModule(source, { compilerOptions: {
+    module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
+  } }).outputText.replace(/^import .+;\n/gm, '').replace(/^export /gm, '');
+  const catalog = [
+    { id: 'petals', name: 'Petal medallion', order: 3 }, { id: 'fu', name: 'Fu', order: 1 }, { id: 'flower', name: 'Flower', order: 2 },
+  ];
+  const context = { catalog, INITIAL_DRAWING: 'fu', compareStudies };
+  runInNewContext(code + '\nglobalThis.result = { studies, initialStudy };', context);
+  assert.equal(context.result.initialStudy.id, 'fu');
+  assert.deepEqual(Array.from(context.result.studies, study => study.id), ['fu', 'flower', 'petals']);
+  assert.equal(catalog[0].id, 'petals', 'selecting Fu must not mutate the generated input');
+  const fallback = { catalog, INITIAL_DRAWING: 'missing', compareStudies };
+  runInNewContext(code + '\nglobalThis.result = { initialStudy };', fallback);
+  assert.equal(fallback.result.initialStudy.id, 'fu');
+  const reordered = { catalog: catalog.map(study => ({ ...study, order: study.id === 'fu' ? 4 : study.order })), INITIAL_DRAWING: 'fu', compareStudies };
+  runInNewContext(code + '\nglobalThis.result = { studies, initialStudy };', reordered);
+  assert.deepEqual(Array.from(reordered.result.studies, study => study.id), ['flower', 'petals', 'fu']);
+  assert.equal(reordered.result.initialStudy.id, 'fu', 'changing list order must not change the default');
 });

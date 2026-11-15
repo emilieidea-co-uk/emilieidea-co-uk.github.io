@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runningStitches, clipSegment, generateStitches, inside, stitchesSvg, playbackPosition } from '../src/studio/stitches.ts';
-import { studies, studySvg } from '../src/studio/studies.ts';
+import { studies, initialStudy, studySvg } from '../src/studio/studies.ts';
 import { DEFAULT_SETTINGS, defaultsForStudy, previewPath, readSettings, settingsQuery } from '../src/studio/settings.ts';
 import { stitchDistances, segmentPosition } from '../src/studio/playback.ts';
 import type { Point, StitchOptions } from '../src/studio/stitches.ts';
@@ -23,7 +23,7 @@ test('distance playback interpolates short and long stitches without counting ju
 });
 
 test('preview URL settings round-trip and reject unsupported or excessive values', () => {
-  const selected = { ...DEFAULT_SETTINGS, drawing: 'horse', pattern: 'crosshatch' as const, lineWidth: 3, fillLineWidth: .5, spacing: 48, angle: 90 };
+  const selected = { ...DEFAULT_SETTINGS, drawing: 'flower', pattern: 'crosshatch' as const, lineWidth: 3, fillLineWidth: .5, spacing: 48, angle: 90 };
   assert.deepEqual(readSettings(settingsQuery(selected)), selected);
   assert.deepEqual(readSettings('drawing=unknown&pattern=bad&length=99999&gap=0&lineWidth=NaN&fillLineWidth=-5&spacing=1&angle=999'), DEFAULT_SETTINGS);
   assert.deepEqual(readSettings(''), DEFAULT_SETTINGS);
@@ -95,15 +95,15 @@ test('SVG downloads contain independent visible stitches, and playback clamps to
 
 
 test('shared URL overrides use the selected drawing defaults for every omitted setting', () => {
-  const horse = studies.find(study => study.id === 'horse')!;
-  const saved = horse.defaults;
+  const flower = studies.find(study => study.id === 'flower')!;
+  const saved = flower.defaults;
   try {
-    horse.defaults = { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 };
-    assert.deepEqual(readSettings('drawing=horse'), defaultsForStudy(horse));
-    assert.deepEqual(readSettings('drawing=horse&length=8&pattern=crosshatch'), {
-      ...defaultsForStudy(horse), length: 8, pattern: 'crosshatch',
+    flower.defaults = { length: 10, gap: 6, lineWidth: 3, fillLineWidth: 2, pattern: 'rows', spacing: 48, angle: 90 };
+    assert.deepEqual(readSettings('drawing=flower'), defaultsForStudy(flower));
+    assert.deepEqual(readSettings('drawing=flower&length=8&pattern=crosshatch'), {
+      ...defaultsForStudy(flower), length: 8, pattern: 'crosshatch',
     });
-  } finally { horse.defaults = saved; }
+  } finally { flower.defaults = saved; }
 });
 
 test('outline and fill flags independently control stitch generation', () => {
@@ -124,4 +124,20 @@ test('drawing-specific previews restore defaults and prefer the route drawing ov
     assert.equal(readSettings('drawing=unknown&length=10', study.id).drawing, study.id);
     assert.equal(readSettings('drawing=unknown&length=10', study.id).length, 10);
   }
+});
+
+
+test('Fu is the initial drawing and fallback, with two filled regions and a separate outline', () => {
+  assert.equal(initialStudy.id, 'fu');
+  assert.equal(DEFAULT_SETTINGS.drawing, 'fu');
+  assert.equal(readSettings('').drawing, 'fu');
+  assert.equal(readSettings('drawing=missing').drawing, 'fu');
+  assert.equal(readSettings('drawing=horse').drawing, 'fu');
+  for (const id of ['petals', 'flower']) assert.equal(readSettings(`drawing=${id}`).drawing, id);
+  assert.ok(!studies.some(study => study.id === 'horse'));
+  assert.deepEqual(initialStudy.shapes.map(shape => shape.filled), [true, true, false]);
+  assert.deepEqual(initialStudy.shapes.map(shape => shape.contours.length), [1, 5, 1]);
+  assert.equal(initialStudy.hasOutline, true);
+  assert.equal(initialStudy.hasFill, true);
+  assert.ok(initialStudy.viewBox[2] < 140 && initialStudy.viewBox[3] < 150, 'Fu should be framed around its paths rather than the A4 page');
 });

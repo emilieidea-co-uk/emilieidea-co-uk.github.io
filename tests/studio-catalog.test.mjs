@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { compareStudies } from '../src/studio/options.mjs';
 import { loadStudioCatalog, parseStudioSvg, validateDefinition, studioCatalogPlugin } from '../scripts/studio-catalog.mjs';
 
 const definition = {
@@ -14,6 +15,7 @@ const svg = content => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 20 
 test('definitions require stable IDs, usable steps, local SVGs and supported defaults', () => {
   assert.equal(validateDefinition(definition), definition);
   for (const change of [
+    { order: 0 }, { order: -1 }, { order: 1.5 }, { order: '1' }, { order: null }, { order: Infinity },
     { id: 'Bad ID' }, { name: '' }, { hasOutline: 'true' }, { hasFill: false, hasOutline: false },
     { source: '../outside.svg' }, { defaults: { ...definition.defaults, length: 100 } },
     { defaults: { ...definition.defaults, pattern: 'unknown' } },
@@ -107,4 +109,16 @@ test('dev navigation refreshes changed JSON and invalidates server/client data e
     assert.doesNotThrow(() => events.change(file), 'invalid edits should report an overlay rather than crash the watcher');
     assert.equal(messages.at(-1).type, 'error');
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+
+test('drawing order sorts numerically, with names for ties and unordered drawings last', () => {
+  const drawings = [
+    { id: 'z', name: 'Zebra' }, { id: 'ten', name: 'Ten', order: 10 },
+    { id: 'two', name: 'Two', order: 2 }, { id: 'a', name: 'Alpha' },
+    { id: 'first-b', name: 'Beta', order: 1 }, { id: 'first-a', name: 'Alpha', order: 1 },
+  ];
+  assert.deepEqual(drawings.sort(compareStudies).map(drawing => drawing.id), ['first-a', 'first-b', 'two', 'ten', 'a', 'z']);
+  const catalog = loadStudioCatalog();
+  assert.deepEqual(catalog.map(drawing => [drawing.id, drawing.order]), [['fu', 1], ['flower', 2], ['petals', 3]]);
 });
